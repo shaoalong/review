@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>cookie</title>
+</head>
+
+<body>
+  <script>
+    function setCookie(key, value, days) {
+      var date = new Date();
+      // data.setDate(data.getDate() + days);
+      data.setTime(data.getTime() + (days*24*60*60*1000));
+      document.cookie = key + '=' + value + ';expires=' + date.toUTCString();
+    }
+
+    //这里只需要把Cookie保质期退回一天便可以删除
+    function removeCookie(key) {
+      setCookie(key, '', -1)
+    }
+
+    function getCookie(key) {
+      var cookieArr = document.cookie.split('; ');
+      for (var i = 0; i < cookieArr.length; i++) {
+        var arr = cookieArr[i].split('=');
+        if (arr[0] === key) {
+          return arr[1];
+        }
+      }
+      return false;
+    }
+  </script>
+</body>
+
+</html>

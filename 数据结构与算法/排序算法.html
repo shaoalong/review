@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>排序算法</title>
+</head>
+<body>
+    <script>
+        function swap(arr, i, j) {
+            var temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+        // 冒泡排序
+        // 最好时间复杂度：T(n) = O(n);
+        // 最差时间复杂度：T(n) = O(n^2);
+        // 平均时间复杂度：T(n) = O(n^2)；
+        // 稳定
+        function bubbleSort(arr) {
+            var didSwap = false;
+            for (var i = arr.length; i > 0; i--) {
+                for (var j = 0; j < i; j++) {
+                    if (arr[j] > arr[j + 1]) {
+                        swap(arr, j, j + 1);
+                        didSwap = true;
+                    }
+                }
+                if (!didSwap) {
+                    return;
+                }
+            }
+        }
+
+        // 选择排序
+        // 最好时间复杂度：T(n) = O(n^2)
+        // 最差时间复杂度：T(n) = O(n^2)
+        // 平均时间复杂度：T(n) = O(n^2)
+        // 不稳定
+        function selectSort(arr) {
+            for (var i = 0; i < arr.length; i++) {
+                for (var j = i + 1; j < arr.length; j++) {
+                    if (arr[j] < arr[i]) {
+                        swap(arr, i, j);
+                    }
+                }
+            }
+        }
+
+        // 插入排序
+        // 最好时间复杂度：T(n) = O(n)
+        // 最差时间复杂度：T(n) = O(n^2)
+        // 平均时间复杂度：T(n) = O(n^2)
+        // 稳定
+        function insertSort(arr) {
+            for (var i = 1; i < arr.length; i++) {
+                var temp = arr[i];
+                var n = i;
+                while (n > 0 && temp < arr[n - 1]) {
+                    arr[n] = arr[n-1];
+                    n--;
+                }
+                arr[n] = temp;
+            }
+        }
+
+        // 希尔排序
+        // 最好时间复杂度：T(n) = O(n)
+        // 最差时间复杂度：T(n) = O(n^2)
+        // 平均时间复杂度：T(n) = O(n^1.3)
+        // 不稳定
+        function shellSort(arr) {
+            var gaps = [5, 3, 1];
+            for (var g = 0, gap; gap = gaps[g++];) {
+                for (var i = gap; i < arr.length; i++) {
+                    var temp = arr[i];
+                    var n = i;
+                    while (n > 0 && temp < arr[n - gap]) {
+                        arr[n] = arr[n - gap];
+                        n -= gap;
+                    }
+                    arr[n] = temp;
+                }
+            }
+        }
+
+        // 归纳排序
+        // 最好时间复杂度：T(n) = O(nlogn)
+        // 最差时间复杂度：T(n) = O(nlogn)
+        // 平均时间复杂度：T(n) = O(nlogn)
+        // 不稳定
+        // 空间复杂度：O(n)
+        function mergeSort(arr, start, end) {
+            if (start === end) {
+                return;
+            } else {
+                var mid = Math.floor((end + start) / 2);
+                mergeSort(arr, start, mid);
+                mergeSort(arr, mid+1, end);
+                mergeArray(arr, start, mid, end)
+            }
+        }
+        // 合并两个有序的数组
+        function mergeArray(arr, start, mid, end) {
+            var m = 0;
+            var n = 0;
+            var arr1 = arr.slice(start, mid);
+            var arr2 = arr.slice(mid, end+1);
+            for (var i = start; i <= end; i++) {
+                if (arr1[m] < arr2[n]) {
+                    arr[i] = arr1[m]
+                    m++;
+                } else {
+                    arr[i] = arr2[n]
+                    n++;
+                }
+            }
+        }
+
+        // 快速排序
+        // 最好时间复杂度：T(n) = O(nlogn)
+        // 最差时间复杂度：T(n) = O(n^2)
+        // 平均时间复杂度：T(n) = O(nlogn)
+        // 空间复杂度：
+        // 不稳定
+        function quickSort(arr, start, end) {
+            if (start >= end) {
+                return
+            }
+            var q = partition(arr, start, end);
+            quickSort(arr, start, q-1);
+            quickSort(arr, q, end);
+        }
+        function partition(arr, start, end) {
+            var povit = arr[end];
+            var i = start;
+            for (var j = start; j < end; j++) {
+                if (arr[j] < povit) {
+                    swap(arr, i, j);
+                    i++;
+                }
+            }
+            swap(arr, i, end);
+            return i;
+        }
+
+
+        function quickSort2(arr, left, right) {
+            var i,j,temp;
+            if (left > right) {
+                return;
+            }
+            temp = arr[left];
+            i = left;
+            j = right;
+            while (i != j) {
+                while (arr[j] >= temp && i < j) {
+                    j--;
+                }
+                while (arr[i] <= temp && i < j) {
+                    i++;
+                }
+                if (i < j) {
+                    swap(arr, i, j);
+                }
+            }
+            arr[left] = arr[i];
+            arr[i] = temp;
+            quickSort2(arr, left, i - 1);
+            quickSort2(arr, i + 1, right);
+        }
+        var arr1 = [1,2,3,4,5,6]
+        quickSort2(arr1, 0, 5);
+        console.log(arr1)
+    </script>
+</body>
+</html>

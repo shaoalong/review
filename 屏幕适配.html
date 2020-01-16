@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>屏幕适配</title>
+</head>
+
+<body>
+  <script>
+    // em作为font-size的单位时，其代表父元素的字体大小，em作为其他属性单位时，代表自身字体大小——MDN
+    // rem作用于非根元素时，相对于根元素字体大小；rem作用于根元素字体大小时，相对于其出初始字体大小——MDN
+    /* 作用于根元素，相对于原始大小（16px），所以html的font-size为32px*/
+    // html{font-size:2rem}
+    /* 作用于非根元素，相对于根元素字体大小，所以为64px */
+    // p{font-size:2rem}
+    // 其实rem布局的本质是等比缩放，一般是基于宽度
+
+    // 设备像素比：DPR = 设备像素/CSS像素
+    // 获得设备像素比（dpr）后，便可得知设备像素与CSS像素之间的比例。当这个比率为1:1时，使用1个设备像素显示1个CSS像素。当这个比率为2:1时，使用4个设备像素显示1个CSS像素，当这个比率为3:1时，使用9（3*3）个设备像素显示1个CSS像素。
+
+  </script>
+</body>
+
+</html>

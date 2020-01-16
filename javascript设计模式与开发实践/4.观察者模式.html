@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>观察者模式（发布-订阅模式）</title>
+</head>
+<body>
+    <button id="count"></button>
+    <div id="show"></div>
+    <script>
+        // 观察者模式：又叫发布-订阅模式，它定义对象间的一种一对多的依赖关系，当一个对象的状态发生变化时，
+            // 所有依赖于它的对象都将得到通知。
+        var Event = (function(){
+            var clientList = {};
+            var listen;
+            var trigger;
+            var remove;
+            listen = function(key, fn) {
+                if (!clientList[key]) {
+                    clientList[key] = [];
+                }
+                clientList[key].push(fn);
+                console.log(clientList);
+            };
+            trigger = function() {
+                var key = Array.prototype.shift.call(arguments);
+                var fns = clientList[key];
+                if (!fns || fns.length === 0) {
+                    return false;
+                }
+                for (var i = 0, fn; fn = fns[i++];) {
+                    fn.apply(this, arguments);
+                }
+            };
+            remove = function(key, fn) {
+                var fns = clientList[key];
+                if (!fns) {
+                    return false;
+                }
+                if (!fn) {
+                    fns && (fns.length = 0);
+                } else {
+                    for (var l = fns.length - 1; l > 0; l--) {
+                        var _fn = fns[l];
+                        if (_fn === fn) {
+                            fns.splice(l, 1);
+                        }
+                    }
+                }
+            };
+
+            return {
+                listen: listen,
+                trigger: trigger,
+                remove: remove,
+            };
+        })();
+
+        var a = (function() {
+            var count = 0;
+            var button = document.getElementById('count');
+            button.onclick = function() {
+                Event.trigger('add', count++);
+            };
+        })();
+
+        var b = (function() {
+            var show = document.getElementById('show');
+            Event.listen('add', function(count) {
+                show.innerHTML = count;
+            });
+        })();
+
+        Event.listen('change', function(count) {
+            console.log('change');
+        });
+
+        var addFunc = function() {
+            console.log('add');
+        }; 
+
+        Event.listen('add', addFunc);
+        // Event.remove('add', addFunc);
+        // Event.remove('add');
+    </script>
+</body>
+</html>

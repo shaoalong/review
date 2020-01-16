@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <h2>装饰者模式（Decorator Pattern）：给对象动态添加职责的方式就是装饰者模式，能够在不改变原对象的情况下，在运行的时候给对象添加新的职责。</h2>
+    <h3>装饰者与代理模式的区别：</h3>
+    <h4>装饰者模式：在不改变接口的前提下，动态扩展对象的功能。装饰者模式强调功能扩展，比如A对象的B方法，运用装饰模式后，在调用B方法前后增加了新的功能，此时B方法效果与原来不同（咖啡店的例子，用户知道得到的是加了牛奶和奶泡的深焙咖啡，这杯深焙咖啡与原有的深焙咖啡不同）
+    </h4>
+    <h4>代理模式：再不改变接口的前提下，控制对象的访问。代理模式强调控制访问，在调用B方法前后加入的方法是用来控制怎么访问B方法的原始数据，而对于B实现的功能效果不做修改（咖啡店的例子，用户只知道得到的是一杯深焙咖啡，里面有没有牛奶等调料是不知道的，功能也是卖给用户一杯咖啡，这个功能是没有变化的
+    </h4>
+    <script>
+        Function.prototype.before = function (fn) {
+            var that = this;
+            return function () {
+                fn.apply(this, arguments);
+                return that.applay(this, arguments)
+            }
+        }
+        Function.prototype.after = function (fn) {
+            var that = this;
+            return function () {
+                var ret = that.applay(this, arguments)
+                fn.apply(this, arguments);
+                return ret
+            }
+        }
+
+        var before = function (fn, beforeFn) {
+            return function () {
+                beforeFn.call(this, arguments);
+                return fn.call(this, arguments);
+            }
+        }
+        var after = function (fn, afterFn) {
+            return function () {
+                var ret = fn.call(this, arguments);
+                afterFn.call(this, arguments);
+                return ret;
+            }
+        }
+
+        // var demo = function () {
+        //     console.log(1);
+        // }
+        // demo.a = 123;
+        // demo = demo.after(function () {
+        //     console.log(2);
+        // });
+        // console.log(demo)
+
+        // 传统面向对象语言的实现方式
+        var Car = function () {}
+        Car.prototype.drive = function () {
+            console.log('乞丐版');
+        }
+
+        var AutoDriveDecorator = function (car) {
+            this.car = car;
+        }
+        AutoDriveDecorator.prototype.drive = function () {
+            this.car.drive();
+            console.log('启动自动驾驶模式');
+        }
+        // var car = new Car();
+        // car = new AutoDriveDecorator(car);
+        // car.drive()
+
+        // JS基于对象的实现方式
+        var car = {
+            drive: function () {
+                console.log('乞丐版');
+            }
+        }
+        var driveBasic = car.drive;
+        var autopilotDecorator = function () {
+            console.log('启动自动驾驶模式');
+        }
+        var carToDecorate = Object.create(car)
+        carToDecorate.drive = function () {
+            driveBasic();
+            autopilotDecorator();
+        }
+        carToDecorate.drive();
+
+        // ES7的实现方式
+        function autopilotDecorator(target, key, descriptor) {
+            const method = descriptor.value;
+            descriptor.value = () => {
+                method.applay(target);
+                cosole.log('启动自动驾驶模式')
+            }
+            return descriptor;
+        }
+        class Car {
+            @autopilotDecorator
+            drive() {
+                console.log('乞丐版')
+            }
+        }
+        let car = new Car();
+        car.drive();
+    </script>
+</body>
+
+</html>

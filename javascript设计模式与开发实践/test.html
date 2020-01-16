@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>测试</title>
+</head>
+
+<body>
+    <h2>
+        单例模式：保证一个类仅有一个实例，并提供一个访问它的全局访问点。
+    </h2>
+    <h2>
+        策略模式：定义一系列算法，把他们一个个封装起来，并且使他们可以互相替换，一个基于策略模式的程序至少由两部分组成。
+        第一部分是策略类，策略类封装了具体算法，并负责具体的计算。第二部分是环境类context接收客户的请求，随后把请求委托给某一个策略类。
+    </h2>
+    <h2>
+        代理模式：为一个对象提供一个代用品或占位符，以便控制对他的访问。代理模式的一个好处就是对外提供统一的接口方法，而代理类在接口中实现对真实类的附加操作行为，从而可以不影响外部调用情况下，进行系统扩展。
+        也就是说，我要修改真实角色的操作的时候，尽量不要修改他，而是在外部‘包’一层进行附加行为，即代理类。
+    </h2>
+    <h2>
+        命令模式：是一个高内聚的模式，将一个请求封装整一个对象，从而让你使用不同的请求把客户端参数化，对请求排队或者记录请求日志，可以提供命令的撤回和恢复功能。
+        三类对象：抽象命令类、具体命令类、调用类、接受者
+    </h2>
+    <div id="div1" style="height: 100px"></div>
+    <form id="registerForm">
+        请输入用户名：<input type="text" name="userName">
+        请输入密码：<input type="text" name="password">
+        请输入电话号码：<input type="text" name="phoneNumber">
+        <button>提交</button>
+    </form>
+    <script>
+        // // 反柯里化
+        // Function.prototype.uncurrying = function() {
+        //     var self = this;
+        //     return function() {
+        //         var obj = Array.prototype.slice.call(arguments).shift()
+        //         return self.call(obj)
+        //     }
+        // }
+
+        // var proto_toString = Object.prototype.toString.uncurrying()
+
+        // // 1.运用闭包判断对象类型
+        // var Type = function(type) {
+        //     return function(obj) {
+        //         return proto_toString(obj) === '[object ' + type + ']'
+        //     }
+        // }
+
+        // var isArray = Type('Array')
+        // var isObject = Type('Object')
+        // var isString = Type('String')
+        // console.log(isArray([]))
+        // console.log(isArray(''))
+        // console.log(isObject({}))
+        // console.log(proto_toString([]))
+
+        // // 运用闭包创建具有缓存机制的乘法器
+        // var multWithCache = (function() {
+        //     var cahce = {};
+        //     var mult = function() {
+        //         var result = 1;
+        //         for (var i = 0; i < arguments.length; i++) {
+        //             result *= arguments[i]
+        //         }
+        //         return result;
+        //     }
+        //     return function() {
+        //         var argumentString = Array.prototype.slice(arguments).join(',')
+        //         if (cahce[argumentString]) {
+        //             return cahce[argumentString]
+        //         } else {
+        //             return cahce[argumentString] = mult.apply(null, arguments)
+        //         }
+        //     }
+        // })()
+
+        // console.log(multWithCache(1,2,3))
+        // console.log(multWithCache(1,2,3))
+        // console.log(multWithCache(1,2,3,4))
+
+        // // 柯里化
+        // var currying = function(fn) {
+        //     var cache = []
+        //     return function() {
+        //         if (arguments.length) {
+        //             [].push.apply(cache, arguments)
+        //             return arguments.callee;
+        //         } else {
+        //             return fn.apply(null, cache)
+        //         }
+        //     }
+        // }
+
+        // function cost() {
+        //     var result = 0;
+        //     for (var i = 0, l = arguments.length; i < l; i++) {
+        //         result += arguments[i];
+        //     }
+        //     return result;
+        // }
+
+        // var realCost = currying(cost)
+        // console.log(realCost)
+        // console.log(realCost(1,2,3))
+        // console.log(realCost(1,2,3)())
+
+        // // 限流函数
+        // var throttle = function(fn, interval) {
+        //     var timer;
+        //     var firstTime = true
+        //     return function() {
+        //         var _this = this;
+        //         var args = arguments;
+        //         if (firstTime) {
+        //             fn.apply(_this, args)
+        //             firstTime = false
+        //             return false
+        //         }
+        //         if (timer) {
+        //             return false
+        //         }
+        //         timer = setTimeout(function() {
+        //             clearTimeout(timer);
+        //             fn.apply(_this, args)
+        //             timer = null;
+        //         }, interval || 500)
+        //     }
+        // }
+
+        // function fn(a) {
+        //     console.log('kkkkkk', a)
+        // }
+        // var repeatFn = throttle(fn, 5000);
+        // var n = 0;
+        // while (n < 100000) {
+        //     repeatFn(10)
+        //     n++;
+        // }
+
+        // // 浏览器嗅探
+        // var addEvent = function(ele, type, handler) {
+        //     if (window.addEventListener) {
+        //         addEvent = function(ele, type, handler) {
+        //             ele.addEventListener(type, handler, false)
+        //         }
+        //     } else if (window.attachEvent) {
+        //         addEvent = function(ele, type, handler) {
+        //             ele.attachEvent('on' + type, handler)
+        //         }
+        //     }
+        //     addEvent(ele, type, handler)
+        // }
+
+        // var div = document.getElementById('div1');
+        // addEvent(div, 'click', function() {
+        //     console.log('div1')
+        // })
+
+
+        // function Person(name) {
+        //     this.name = name;
+        // }
+        // Person.prototype.getName = function() {
+        //     return this.name;
+        // }
+
+        // var along = new Person('along')
+        // console.log(Person.prototype)
+        // console.log(along)
+        // console.log(along.__proto__ === Person.prototype)
+        // console.log(along.constructor === Person)
+        // console.log(Object.getPrototypeOf(along) === Person.prototype)
+
+        // var objectFactory = function() {
+        //     var constructor = [].shift.call(arguments);
+        //     var obj = new Object();
+        //     obj.__proto__ = constructor.prototype;
+        //     var ret = constructor.apply(obj, arguments);
+        //     return typeof ret === 'object' ? ret : obj;
+        // }
+        // var yanyan = objectFactory(Person, 'yanyan')
+        // console.log(yanyan)
+
+
+        // var A = function() {}
+        // function B() {}
+        // console.log(A.__proto__ === Function.prototype)
+        // console.log(B.__proto__ === Function.prototype)
+        // console.log(A.prototype)
+        // console.log(B.prototype)
+
+        // var n1 = new Number();
+        // var n2 = Number();
+        // console.log(n1, typeof n1, n1 === 0, n1.valueOf())
+        // console.log(n2, typeof n2, n2 === 0, n1.valueOf())
+
+        // var s1 = new String();
+        // var s2 = String();
+        // console.log(s1, typeof s1, s1 === '', s1.valueOf())
+        // console.log(s2, typeof s2, s2 === '', s2.valueOf())
+
+        // var b1 = new Boolean();
+        // var b2 = Boolean();
+        // console.log(b1, typeof b1, b1 === false, b1.valueOf())
+        // console.log(b2, typeof b2, b2 === false, b2.valueOf())
+
+        // Function、Object都是由Function创建的实例
+        // var f1 = new Function();
+        // var f2 = function() {};
+        // var f3 = new f2();
+        // console.log(f1.prototype.__proto__ === Object.prototype)
+        // console.log(typeof f1, f1.prototype, f1.__proto__ === Function.prototype, f1.constructor === Function)
+        // console.log(typeof f2, f2.prototype, f2.__proto__ === Function.prototype, f2.constructor === Function)
+        // console.log(typeof f3, f3.prototype, f3.__proto__ === f2.prototype, f3.constructor === f2)
+
+        // console.log(f1.prototype.constructor === f1)
+        // console.log(f1.prototype.__proto__ === Object.prototype)
+
+
+        // console.log(typeof Object)
+        // console.log(Object.prototype)
+        // console.log(Object.prototype.constructor === Object)
+        // console.log(Object.prototype.__proto__ === null)
+        // console.log(Object.__proto__ === Function.prototype)
+        // console.log(Object.constructor === Function)
+        // console.log(Object.__proto__.__proto__ === Object.prototype)
+        // console.log(Function.prototype.__proto__ === Object.prototype)
+
+        // var ff = new Function();
+        // console.log(ff.__proto__ === Function.prototype)
+        // console.log(Function.prototype.constructor === Function)
+        // console.log(Function.prototype.__proto__ === Object.prototype)
+        // console.log(Function.__proto__ === Function.prototype)
+        // console.log(Function.__proto__.__proto__ === Object.prototype)
+
+        // 单例模式
+        // var getSingle = function(fn) {
+        //     var result;
+        //     return function() {
+        //         return result || (result = fn.apply(this, arguments))
+        //     }
+        // }
+
+        // var createLoginLayer = function() {
+        //     var div = document.createElement('div');
+        //     div.innerHTML = '我是登录浮框';
+        //     div.style.display = 'none';
+        //     document.body.appendChild(div);
+        //     return div;
+        // }
+        // var createSingleLoginlayer = getSingle(createLoginLayer);
+        // document.getElementById('div1').onclick = function() {
+        //     var loginLayer = createSingleLoginlayer();
+        //     loginLayer.style.display = 'block';
+        // }
+
+        // var bindEvent = getSingle(function() {
+        //     console.log('bindEvent')
+        //     document.getElementById('div1').onclick = function() {
+        //         alert('click')
+        //     }
+        //     return true
+        // })
+
+        // var render = function() {
+        //     console.log('开始渲染')
+        //     bindEvent()
+        // }
+        // render()
+        // render()
+        // render()
+        // render()
+
+
+        // 策略模式
+        // var strategies = {
+        //     required: function(value, errorMsg) {
+        //         if (value === ''){
+        //             return errorMsg;
+        //         }
+        //     },
+        //     minLength: function(value, length, errorMsg) {
+        //         if (value.length < length) {
+        //             return errorMsg;
+        //         }
+        //     },
+        //     isMobile: function(value, errorMsg) {
+        //         if(!/^1[3|5|5][0-9]{9}$/.test(value)) {
+        //             return errorMsg;
+        //         }
+        //     },
+        // };
+        // function Validator() {
+        //     this.cache = {};
+        // }
+        // Validator.prototype.add = function(dom, rules) {
+        //     var self = this;
+        //     for(var i = 0, rule; rule = rules[i++];) {
+        //         (function(rule) {
+        //             var fn = function() {
+        //                 var ruleStrategy = rule.rule.split(':');
+        //                 var errMsg = rule.message;
+        //                 var startegy = ruleStrategy.shift();
+        //                 ruleStrategy.unshift(dom.value);
+        //                 ruleStrategy.push(errMsg);
+        //                 return strategies[startegy].apply(dom, ruleStrategy);
+        //             }
+        //             if (self.cache[dom.name]) {
+        //                 self.cache[dom.name].push(fn)
+        //             } else {
+        //                 self.cache[dom.name] = [fn]
+        //             }
+        //         })(rule)
+        //     }
+        // }
+        // Validator.prototype.validate = function() {
+        //     var result = {}
+        //     for (var validatorDom in this.cache) {
+        //         var validatorFnArr = this.cache[validatorDom]
+        //         for (var j = 0, validatorFn; validatorFn = validatorFnArr[j++];) {
+        //             var msg = validatorFn();
+        //             if (msg) {
+        //                 result[validatorDom] = msg;
+        //                 break;
+        //             }
+        //         }
+        //     }
+        //     return result;
+        // }
+
+        // var registerForm = document.getElementById('registerForm');
+        // var validator = new Validator();
+        // validator.add(registerForm.userName, [
+        //     {
+        //         rule: 'required',
+        //         message: '用户名不能为空'
+        //     },
+        //     {
+        //         rule: 'minLength:6',
+        //         message: '用户名长度不能少于6位'
+        //     },
+        // ])
+        // validator.add(registerForm.password, [
+        //     {
+        //         rule: 'minLength:6',
+        //         message: '密码长度不能少于6位'
+        //     },
+        // ])
+        // validator.add(registerForm.phoneNumber, [
+        //     {
+        //         rule: 'isMobile',
+        //         message: '手机号码格式不正确',
+        //     },
+        // ])
+        // registerForm.onsubmit = function(e){
+        //     e.preventDefault()
+        //     var errorInfo = validator.validate();
+        //     console.log(errorInfo)
+        // }
+
+        // 代理模式
+        // var syncFile = function(id) {
+        //     console.log('开始同步文件，id为：' + id);
+        // }
+        // var checkbox = document.getElementsByTagName('input');
+        // for (var i = 0, l; l = checkbox[i++];) {
+        //     l.onclick = function() {
+        //         if (this.checkbox === true) {
+        //             syncFile(this.id)
+        //         }
+        //     }
+        // }
+
+        // var proxySyncFile = (function() {
+        //     var cache = [];
+        //     var timer;
+        //     return function(id) {
+        //         cache.push(id);
+        //         if (timer) {
+        //             return;
+        //         }
+        //         timer = setTimeout(function() {
+        //             syncFile(cache.join(','));
+        //             timer = null;
+        //             cache.length = 0;
+        //         }, 2000)
+        //     }
+        // })();
+
+        // 命令模式
+        // var Interface = function(name, methods) {
+        //     if(arguments.length != 2) {
+        //         throw new Error("请确认要检查的接口所传的参数是否正确，例如：var Person = new Interface('Person', ['GetName','GetAge']);");
+        //     }
+        //     if(methods.length == 0){
+        //         throw new Error("要检查的接口的方法名不能为空");
+        //     }
+        //     this.Name = name;
+        //     this.Method = [];
+        //     for(var i = 0; i < methods.length; i++) {
+        //         if(typeof methods[i] !== 'string') {
+        //             throw new Error("方法名不是字符串");
+        //         }
+        //         this.Method.push(methods[i]);
+        //     }
+        // }
+
+        // Interface.ensureImplement = function(object) {
+        //     if(arguments.length < 2) {
+        //         throw new Error("没有接口或实例");
+        //     }
+
+        //     for(var i = 1; i < arguments.length; i++) {
+        //         var interface1 = arguments[i];
+        //         if(interface1.constructor !== Interface) {
+        //             throw new Error("参数不是接口");
+        //         }
+        //         for(var j = 0; j < interface1.Method.length; j++) {
+        //             var method = interface1.Method[j];
+        //             if(!object[method] || typeof object[method] !== 'function') {
+        //                 throw new Error("您的实例没有实现接口:\t" + method);
+        //             }
+        //         }
+        //     }
+        // }
+
+        // function Peson(){}
+        // Peson.prototype.add = function(){
+        //     console.log('新增接口');
+        // }
+        // Peson.prototype.del = function(){
+        //     console.log('删除接口');
+        // }
+
+        // //在你使用该类的方法的时候先去检查你要用到的方法是否存在
+        // var peson = new Peson();
+        // //Interfaces
+        // var check = new Interface('check',['add', 'del']);
+        // //检查你要用到的方法是否存在，如果你要用的方法没有实现，会抛出错误提示
+        // Interface.ensureImplement(peson, check);
+        // //使用接口
+        // peson.add();
+        // peson.del();
+
+        // commond(抽象命令类)
+        // let ICommond = new Interface('ICommond', ['execute','undo']);
+
+        // // ConcreteCommond(具体抽象类)
+        // let LightOnCommand = function(light) {
+        //     this.light = light;
+        // }
+        // LightOnCommand.prototype.execute = function() {
+        //     this.light.on();
+        // }
+        // LightOnCommand.prototype.undo = function() {
+        //     this.light.off();
+        // }
+        // let TVOnCommand = function(tv) {
+        //     this.tv = tv;
+        // }
+        // TVOnCommand.prototype.execute = function() {
+        //     this.tv.on();
+        // }
+        // TVOnCommand.prototype.undo = function() {
+        //     this.tv.off();
+        // }
+
+        // // Invoker(调用者)
+        // let Iphone = function() {
+        //     this.commonds = [];
+        // }
+        // Iphone.prototype.setCommand = function(commond) {
+        //     this.commonds.push(commond)
+        // }
+        // Iphone.prototype.onButtonWasPushed = function(slot) {
+        //     this.commonds[slot-1].execute();
+        // }
+
+        // // Reciever(接受者)
+        // let IHouseApplication = new Interface('IHouseApplication', ['on','off']);
+
+        // // Receiver（接收者）--也可以有接口类
+        // let TV  = function () {
+        // };
+        // TV.prototype.on = function() {
+        // console.log("the TV on");
+        // };
+        // TV.prototype.off = function() {
+        // console.log("the TV off");
+        // };
+        // let Light  = function () {
+        // };
+        // Light.prototype.on = function() {
+        // console.log("the Light on");
+        // };
+        // Light.prototype.off = function() {
+        // console.log("the Light off");
+        // };
+
+
+        // let miPhone = new Iphone();
+        // let light = new Light();
+        // let tv = new TV();
+        // Interface.ensureImplement(tv, IHouseApplication)
+        // Interface.ensureImplement(light, IHouseApplication)
+
+        // let lightOnCommand = new LightOnCommand(light);
+        // let tvOnCommand = new TVOnCommand(tv);
+
+        // Interface.ensureImplement(lightOnCommand, ICommond)
+        // Interface.ensureImplement(tvOnCommand, ICommond)
+
+        // miPhone.setCommand(lightOnCommand);
+        // miPhone.setCommand(tvOnCommand);
+
+        // miPhone.onButtonWasPushed(1);
+        // miPhone.onButtonWasPushed(2);
+
+        // 状态模式
+        // var plugin = (function () {
+        //     var plugin = document.createElement('embed');
+        //     plugin.style.display = 'none';
+        //     plugin.type = 'application/txftn-webkit';
+        //     plugin.sign = function () {
+        //         console.log('开始文件扫描');
+        //     }
+        //     plugin.pause = function () {
+        //         console.log('暂停文件上传');
+        //     }
+        //     plugin.uploading = function () {
+        //         console.log('开始文件上传');
+        //     }
+        //     plugin.del = function () {
+        //         console.log('删除文件上传');
+        //     }
+        //     plugin.done = function () {
+        //         console.log('文件上传完成');
+        //     }
+        //     document.body.appendChild(plugin);
+        //     return plugin;
+        // })()
+
+        // var stateFactory = (function () {
+        //     function state() {}
+        //     State.prototype.clickHandler1 = function () {
+        //         throw new Error('子类必须重写父类的clickHandler1方法')
+        //     }
+        //     State.prototype.clickHandler2 = function () {
+        //         throw new Error('子类必须重写父类的clickHandler2方法')
+        //     }
+
+        //     return function (params) {
+        //         var F = function (uploadObj) {
+        //             this.uploadObj = uploadObj;
+        //         }
+        //         F.prototype = new State();
+        //         for (var i in param) {
+        //             F.prototype[i] = param[i];
+        //         }
+        //         return F;
+        //     }
+        // })()
+
+        // var SignState = stateFactory({
+        //     clickHandler1: function () {
+        //         console.log('扫描中，点击无效...');
+        //     },
+        //     clickHandler2: function () {
+        //         console.log('文件上传中，不能删除');
+        //     },
+        // });
+        // var UploadingState = stateFactory({
+        //     clickHandler1: function () {
+        //         this.uploadObj.pause();
+        //     },
+        //     clickHandler2: function () {
+        //         console.log('文件上传中，不能删除');
+        //     },
+        // });
+        // var PauseState = stateFactory({
+        //     clickHandler1: function () {
+        //         this.uploadObj.uploading();
+        //     },
+        //     clickHandler2: function () {
+        //         this.uploadObj.del();
+        //     },
+        // });
+        // var DoneState = stateFactory({
+        //     clickHandler1: function () {
+        //         console.log('文件已完成上传，点击无效');
+        //     },
+        //     clickHandler2: function () {
+        //         this.uploadObj.del();
+        //     },
+        // });
+        // var ErrorState = stateFactory({
+        //     clickHandler1: function () {
+        //         console.log('文件已完成失败，点击无效');
+        //     },
+        //     clickHandler2: function () {
+        //         this.uploadObj.del();
+        //     },
+        // });
+
+        // var upload = function(fileName) {
+        //     this.plugin = plugin;
+        //     this.fileName = fileName;
+        //     this.signState = new SignState(this);
+        //     this.uploadingState = new UploadingState(this);
+        //     this.pauseState = new PauseState(this);
+        //     this.doneState = new DoneState(this);
+        //     this.errorState = new ErrorState(this);
+        //     this.currState = this.signState;
+        //     this.button1 = null;
+        //     this.button2 = null;
+        // }
+        // Upload.prototype.init = function() {
+        //     var that = this;
+        //     this.dom = document.createElement('div');
+        //     this.dom.innerHTML = '<span>文件名称：' + this.fileName + '</span>\
+        //                         <button data-action="button1">扫描中</button>\
+        //                         <button data-action="button2">删除</button>';
+        //     document.body.appendChild(this.dom);
+        //     this.button1 = this.dom.querySelector('[data-action="button1"]');
+        //     this.button2 = this.dom.querySelector('[data-action="button2"]');
+        //     this.bindEvent();
+        // };
+        // Upload.prototype.bindEvent = function() {
+        //     var self = this;
+        //     this.button1.onclick = function() {
+        //         self.currState.clickHandler1();
+        //     }
+        //     this.button2.onclick = function() {
+        //         self.currState.clickHandler2();
+        //     }
+        // };
+        // Upload.prototype.sign = function() {
+        //     this.plugin.sign();
+        //     this.currState = this.signState;
+        // }
+        // Upload.prototype.uploading = function() {
+        //     this.button1.innerHTML = '正在上传，点击暂停';
+        //     this.plugin.uploading();
+        //     this.currState = this.uploadingState;
+        // }
+        // Upload.prototype.pause = function() {
+        //     this.button1.innerHTML = '已暂停，点击继续上传';
+        //     this.plugin.pause();
+        //     this.currState = this.pauseState;
+        // }
+        // Upload.prototype.done = function() {
+        //     this.button1.innerHTML = '上传完成';
+        //     this.plugin.done();
+        //     this.currState = this.doneState;
+        // }
+        // Upload.prototype.error = function() {
+        //     this.button1.innerHTML = '上传失败';
+        //     this.currState = this.errorState;
+        // }
+        // Upload.prototype.del = function() {
+        //     this.plugin.del();
+        //     this.dom.parentNode.removeChild(this.dom);
+        // }
+
+    // 观察者模式
+    // class Observer {
+    //     constructor() {
+    //         this.observerList = {};
+    //     }
+    //     subscribe(key = '', fn = null) {
+    //         if (!key || !fn) {
+    //             return;
+    //         }
+    //         if (key in this.observerList) {
+    //             this.observerList[key].push(fn);
+    //         } else {
+    //             this.observerList[key] = [fn]
+    //         }
+    //     }
+    //     unsubscribe(key = '', fn = null) {
+    //         if (!key || !key in this.observerList) {
+    //             return;
+    //         }
+    //         if (!!fn) {
+    //             let fns = this.observerList[key];
+    //             this.observerList[key] = fns.filter(x => x !== fn);
+    //         } else {
+    //             this.observerList[key] = [];
+    //         }
+    //     }
+    //     publish(...params) {
+    //         const key = params[0]
+    //         if (!key || !key in this.observerList) {
+    //             return;
+    //         }
+    //         const fns = this.observerList[key];
+    //         fns.forEach(fn => {
+    //             fn.apply(this, params.splice(1))
+    //         })
+    //     }
+    // }
+
+    // var observer = new Observer();
+    // var key1Handler = function(name) {
+    //     console.log('key1', name)
+    // }
+    // var key2Handler = function(name, age) {
+    //     console.log('key2', name, age)
+    // }
+    // observer.subscribe('key1', key1Handler)
+    // observer.subscribe('key1', key2Handler)
+    // observer.unsubscribe('key1', key2Handler)
+    // observer.subscribe('key2', key2Handler)
+
+    // observer.publish('key1', 'haha')
+    // observer.publish('key2', 'haha', '89')
+
+    function Node(data) {
+        this.data = data;
+        this.next = null;
+    }
+
+    class List {
+        constructor() {
+            this.head = new Node('head');
+        }
+
+        checkExistNode(data) {
+            let currentNode = this.head;
+            while (currentNode.data !== data && currentNode.next !== null) {
+                currentNode = currentNode.next;
+            }
+            return currentNode.data === data
+        }
+
+        findPrevNode(data) {
+            let currentNode = this.head;
+            while (currentNode.next !== null && currentNode.next.data !== data) {
+                currentNode = currentNode.next;
+            }
+            return currentNode.next.data === data ? currentNode : null;
+        }
+
+        insert(data, posData) {
+            const inList = this.checkExistNode(posData);
+            if (inList) {
+                const node = new Node(data);
+                let currentNode = this.head;
+                while (currentNode.data !== posData && currentNode.next !== null) {
+                    currentNode = currentNode.next;
+                }
+                currentNode.next = node;
+            }
+        }
+
+        append(data) {
+            const node = new Node(data);
+            let currentNode = this.head;
+            while (currentNode.next !== null) {
+                currentNode = currentNode.next;
+            }
+            currentNode.next = node;
+        }
+
+        remove(data) {
+            const prevNode = this.findPrevNode(data);
+            if (prevNode) {
+                prevNode.next = prevNode.next.next;
+            }
+        }
+
+        length() {
+            let n = 0;
+            let currentNode = this.head;
+            while (currentNode.next !== null) {
+                currentNode = currentNode.next;
+                n++;
+            }
+        }
+
+        show() {
+            let string = ''
+            let currentNode = this.head;
+            while (currentNode.next !== null) {
+                string += currentNode.data + '-> ';
+                currentNode = currentNode.next;
+            }
+            string += currentNode.data
+            console.log(string)
+        }
+    }
+
+
+    function add(num1, num2) {
+        const listNum1 = new List();
+        const listNum2 = new List();
+        const num1Array = (num1+'').split('').map(x => +x)
+        const num2Array = (num2+'').split('').map(x => +x)
+        num1Array.reverse().forEach(x => {
+            listNum1.append(x)
+        })
+        num2Array.reverse().forEach(x => {
+            listNum2.append(x)
+        })
+        
+        let popFlag = 0;
+        let list = new List();
+        let currentlistNum1Node = listNum1.head.next;
+        let currentlistNum2Node = listNum2.head.next;
+        while (currentlistNum1Node !== null || currentlistNum1Node !== null) {
+            const sum = (currentlistNum1Node ? currentlistNum1Node.data : 0) + (currentlistNum2Node ? currentlistNum2Node.data : 0) + popFlag;
+            popFlag = sum > 10 ? 1 : 0
+            list.append(popFlag ? sum % 10 : sum);
+            currentlistNum1Node = currentlistNum1Node ? currentlistNum1Node.next : null;
+            currentlistNum2Node = currentlistNum2Node ? currentlistNum2Node.next : null;
+        }
+        list.show();
+    }
+    console.log(add(123, 90))
+    </script>
+</body>
+
+</html>

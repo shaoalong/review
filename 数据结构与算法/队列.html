@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>队列</title>
+</head>
+
+<body>
+    <h3>队列是一种列表，不同的是只能在队尾插入元素，在队首删除元素，是一种先进先出的数据结构</h3>
+    <script>
+        class Queue {
+            constructor() {
+                this.dataStore = []
+            }
+
+            enqueue(ele) {
+                this.dataStore.push(ele);
+            }
+
+            dequeue() {
+                return this.dataStore.shift();
+            }
+
+            isEmpty() {
+                return !this.dataStore.length
+            }
+
+            show() {
+                console.log(this.dataStore);
+            }
+        }
+
+        const arr = new Array(10).fill(0).map(() => Math.floor(Math.floor(Math.random() * 99)));
+        const queueSort = (array) => {
+            const queue = new Array(10).fill(0).map(() => new Queue());
+            const digitySort = (arr, digity) => {
+                if (digity === 1) {
+                    arr.forEach(element => {
+                        queue[element % 10].enqueue(element)
+                    });
+                } else {
+                    arr.forEach(element => {
+                        queue[Math.floor(element / 10)].enqueue(element)
+                    });
+                }
+
+                const result = [];
+                queue.forEach(x => {
+                    while (x.dataStore.length) {
+                        result.push(x.dequeue())
+                    }
+                })
+                return result;
+            }
+            return digitySort(digitySort(array, 1), 10);
+        }
+        console.log(queueSort(arr))
+    </script>
+</body>
+
+</html>

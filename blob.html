@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <img src="" id="img">
+    <input type="file" id="file">
+    <script>
+        // Blob、File、ArrayBuffer、FileReader、createObjectURL
+        // Blob(Binary Large Object):二进制大对象;就是一个包含有只读原始数据的类文件对象,专门存放二进制
+        // new Blob([ArrayBuffer|TypedArray|Blob|string], {type: ''})：参数可以是ArrayBuffer、File、Blob、字符串;第二个参数表示Blob类型，可不要
+        //      两个属性：size：所包含数据的大小。字节为单位。只读。type：包含数据的MIME类型。如"image/jpeg"。如果未知则为空字符串。只读
+
+        // File：顾名思义文件，通常而言就是file类型的input空间选择的fileList对象，或者是使用拖拽操作搞出来的DataTransfer对象。File从属于Blob对象
+
+        // ArrayBuffer：表示二进制数据的原始缓冲区。是二进制数据通用的固定长度容器。
+
+        // createObjectURL(File|Blob) ：参数是Blob或者File。可以获取当前文件的一个内存URL。同步执行。
+        //      返回一段带hash的url，并且会一直储存在内存中，直到document触发unload时间（例如：document close）或者执行revokeObjectURL来释放。
+        //      可以节省性能并更快速，只不过需要在不使用的情况下手动释放内存
+        // readAsDataURL(File|Blob) ：参数是Blob或者File。可以获取一段data:base64的字符串。异步执行
+        //      返回包含很多字符的base64，并会比blob url消耗更多内存，但是再不用的时候会自动从内存中清楚（通过浏览器回收机制）
+        //      如果想获取base64，推荐使用他。
+
+
+        function ab2str(arraybuffer, encode = 'utf8') {
+            var decoder = new TextDecoder(encode);
+            return decoder.decode(arraybuffer);
+        }
+
+        function str2ab(string) {
+            var encoder = new TextEncoder();
+            var view = encoder.encode(string);
+            return view.buffer;
+        }
+
+        var img = document.getElementById('img');
+        var file = document.getElementById('file');
+        file.addEventListener('change', function() {
+            var file0 = this.files[0];
+            var fileBlob = new Blob([file0], {type: file0.type});
+            var url = window.URL.createObjectURL(fileBlob)
+            console.log('fileBlob:', fileBlob);
+            console.log('file0:', file0)
+            console.log('createObjectURL:', url);
+
+            var reader = new FileReader();
+            reader.readAsDataURL(fileBlob); // readAsText、readAsArrayBuffer、readAsBinaryString、readAsDataURL
+            reader.onload = function() {
+                if (this.readyState === 2) {
+                    var result = this.result
+                    img.src = result;
+                    console.log('FileReader:', result)
+                    // console.log('ab2str:', ab2str(result))
+                    // console.log('str2ab:', str2ab(ab2str(result)))
+                }
+            }
+        }, false)
+        
+
+        var buffer = new ArrayBuffer(2);
+        var int8Array = new Int8Array(buffer);
+        var int16Array = new Int16Array(buffer);
+        int16Array[0] = 270; // [00000001 00001110]
+        console.log(int8Array) // [00001110, 00000001] 小端字节序(前后颠倒)
+    </script>
+</body>
+</html>

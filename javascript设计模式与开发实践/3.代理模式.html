@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>代理模式</title>
+</head>
+<body>
+    <input type="checkbox" id="1">
+    <input type="checkbox" id="2">
+    <input type="checkbox" id="3">
+    <input type="checkbox" id="4">
+    <input type="checkbox" id="5">
+    <input type="checkbox" id="6">
+    <script>
+        // 代理模式: 为一个对象提供一个代用品或占位符，以便控制对他的访问。代理模式的一个好处就是对外提供统一的接口方法，而代理类在接口中实现对真实类的附加操作行为，从而可以不影响外部调用情况下，进行系统扩展。
+        // 也就是说，我要修改真实角色的操作的时候，尽量不要修改他，而是在外部‘包’一层进行附加行为，即代理类。
+        // 保护代理：过滤一些数据
+        // 虚拟代理：把一些开销很大的对象，延迟到真正需要他的时候才创建。
+            // 例1.虚拟代理实现图片预加载：等到图片加载过来之后再赋值给image节点
+            // var myImage = (function(){
+            //     var imgNode = document.createElement('img');
+            //     document.body.appendChild(imgNode);
+            //     return {
+            //         setSrc: function(src){
+            //             imgNode.src = src;
+            //         },
+            //     };
+            // })();
+            
+            // var proxyImage = (function(){
+            //     var img = new Image;
+            //     img.onload = function() {
+            //         myImage.setSrc(this.src);
+            //     }
+            //     return {
+            //         setSrc: function(src) {
+            //             myImage.setSrc('D:\Users\ex-shaoalong002\Desktop\loading.gif'); // loading图片先占位
+            //             img.src = src;
+            //         },
+            //     };
+            // })();
+            // proxyImage.setSrc();
+            // 例2.虚拟代理合并HTTP请求：点击checkbox就立即向后台同步，当很快点击会给服务器造成压力， 如果对实时性要求不高，
+                // 可以控制在两秒后提交数据,也就是收集两秒内的操作,一起向服务器请求, 减轻服务器压力.
+                // var syncFile = function(id) {
+                //     console.log('开始同步文件，id为：' + id);
+                // };
+                // var checkbox = document.getElementsByTagName('input');
+                // for (var i = 0, l; l = checkbox[i++];) {
+                //     l.onclick = function() {
+                //         if (this.checked === true) {
+                //             // syncFile(this.id);
+                //             proxySyncFile(this.id);
+                //         }
+                //     };
+                }
+
+                // var proxySyncFile = (function() {
+                //     var cache = [];
+                //     var timer;
+                //     return function(id) {
+                //         cache.push(id);
+                //         if (timer) {
+                //             return;
+                //         }
+                //         timer = setTimeout(function(){
+                //             syncFile(cache.join(','));
+                //             timer = null;
+                //             cache.length = 0;
+                //         }, 2000);
+                //     }
+                // })();
+        // 缓存代理:可以为一些开销大的运算结果提供暂时的存储，在下次运算时，
+            // 如果传递进来的参数跟之前的一致，则直接返回前面储存的运算结果。
+            var plus = function() {
+                var result = 0;
+                for (var i = 0, l = arguments.length; i < l; i ++) {
+                    result += arguments[i];
+                }
+                return result;
+            };
+            var mult = function() {
+                var result = 1;
+                for (var i = 0, l = arguments.length; i < l; i ++) {
+                    result = result * arguments[i];
+                }
+                return result;
+            };
+            var createProxyFactory = function(fn) {
+                var cache = {};
+                return function() {
+                    var args = Array.prototype.join.call(arguments, ',');
+                    if (args in cache) {
+                        return cache[args];
+                    }
+                    return cache[args] = fn.apply(this, arguments);
+                }
+            };
+            var proxyMult = createProxyFactory(mult);
+            var proxyPlus = createProxyFactory(plus);
+            console.log(proxyMult(1,2,3,4));
+            console.log(proxyPlus(1,2,3,4));
+    </script>
+</body>
+</html>

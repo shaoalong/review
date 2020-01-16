@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>浏览器与Node的事件循环</title>
+</head>
+<body>
+    <script>
+        // 图片见 浏览器与Node的事件循环.jpg
+        // 进程与线程：进程是CPU资源分配的最小单位；线程是CPU调度的最小单位；
+        //     . 进程好比图中的工程，有单独的专属自己的工厂资源。
+        //     . 线程好比图中的工人，多个工人在一个工厂中协作工作，工厂与工人是1：n的关系。也就是说
+        //         一个进程是多个线程组成，线程是一个进程中代码的不同执行路径。
+        //     . 工厂的空间是工人们共享的，这象征着一个进程的内存空间是共享的，每个线程都可用这些共享内存。
+        //     . 多个工厂之间独立存在。
+        // 多进程与多线程：
+        //     . 多进程：在同一个时间里，同一个计算机系统中如果允许两个或者两个以上的进程处于运行状态。
+        //         多进程带来的好处很明显，比如不可以听歌的同时，打开编辑器敲代码，编辑器和听歌软件的进程
+        //         之间丝毫没有相互干扰。
+        //     . 多线程：程序中包含多个执行流，即在一个程序中可以同时运行多个不同的线程来执行不同的任务，
+        //         也就是说允许单个程序创建多个并行执行的线程来完成各自的任务。
+
+        // 浏览器内核常驻线程：
+        //     GUI渲染线程：
+        //         . 主要负责页面的渲染，解析HTML、CSS，构建DOM树，布局和绘制等。
+        //         . 当界面需要重绘或者由于某种操作引起回流时，将执行该线程。
+        //         . 该线程与JS引擎线程互斥，当执行JS引擎线程时，GUI渲染线程会被挂起，当任务队列空闲时，主线程才会去执行GUI渲染。
+        //     Javascript引擎线程：
+        //         . 该线程当然是主要处理JavaScript脚本，执行代码。
+        //         . 也是主要负责执行准备好待执行的事件，即定时器计数结束，或者异步请成功并正确返回时，将一次进入任务队列，等待JS引擎线程的执行。
+        //         . 当然，该线程与GUI渲染线程互斥，当JS引擎线程执行JavaScript脚本时间过长，将导致页面渲染的阻塞。
+        //     定时触发器线程：
+        //         . 负责执行异步定时器一类的函数的线程，如：setTimeout/setInterval
+        //         . 主线程依次执行代码时，遇到定时器，会将定时器交给该线程处理，当计数完毕后，事件触发线程会将计数完毕后的事件加入到任务队列的尾部，
+        //             等待JS引擎先后才能执行。
+        //     事件触发线程：
+        //         . 主要负责将准备好的事件交给JS引擎线程执行。
+        //             比如setTimeout定时器技术结束，ajax等异步请求成功并触发回调函数，或者用户触发点击事件时，该线程
+        //             会将整装待发的事件依次加入到任务队列的尾部，等待JS引擎线程的执行。
+        //     异步http请求线程：
+        //         .  负责执行异步请求一类的函数的线程，如Promise，axios，ajax等。
+        //         . 主线程一次执行代码时，遇到异步请求，会将函数交给该线程处理，当监听到状态码变更，如果有回调函数，
+        //             事件触发线程会将回调函数加入到任务队列的尾部，等待JS引擎线程执行。
+        
+        // 浏览器的EventLoop：
+        //     浏览器端事件循环中的异步队列有两种：macro（宏任务）队列和micro（微任务）队列。宏任务队列可以有多个，微任务队列只有一个。
+        //     常见的宏任务有：setTimeout、setInterval、script（整体代码）、I/O操作、UI渲染等。
+        //     常见的微任务有：new Promise().then(回调)、MutationObserver（html5新特性）等。
+            
+        //     当某个宏任务执行完后,会查看是否有微任务队列。如果有，先执行微任务队列中的所有任务，如果没有，会读取宏任务队列中排在最前的任务，
+        //     执行宏任务的过程中，遇到微任务，依次加入微任务队列。栈空后，再次读取微任务队列里的任务，依次类推。
+            
+        //     例：
+        //         async function async1() {               --> 0
+        //         console.log( 'async1 start' )           --> 1
+        //         await async2()                          --> 2
+        //         console.log( 'async1 end' )             --> 3
+        //         }
+        //         async function async2() {               --> 4
+        //             console.log( 'async2' )
+        //         }
+        //         console.log( 'script start' )           --> 5
+        //         setTimeout( function () {               --> 6
+        //             console.log( 'setTimeout' )
+        //         }, 0 )
+        //         async1();                               --> 7
+        //         new Promise( function ( resolve ) {     --> 8
+        //             console.log( 'promise1' )
+        //             resolve();
+        //         } ).then( function () {
+        //             console.log( 'promise2' )           --> 9
+        //         } )
+        //         console.log( 'script end' )             --> 10
+
+        //     宏任务：5、7、8、10、6
+        //     微任务：2、9
+
+        //     5：script start
+        //     7: async1 start、async2
+        //     8：promise1
+        //     10：script end
+        //     2:async1 end
+        //     9:promise2
+        //     6：setTimeout
+    </script>
+</body>
+</html>

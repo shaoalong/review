@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>栈</title>
+</head>
+
+<body>
+    <h2>栈是一种特殊的列表，栈内的元素只能通过列表的一端访问，这一端成为栈顶。被称为一种先入后出的数据结构</h2>
+    <h2>栈（stack）有三种含义，适用于不同的场合。</h2>
+    <h3>含义一：数据结构</h3>
+    <h4>数据像积木那样一层层堆起来，后面加入的数据就放在最上层。使用的时候最上面的数据第一个被用掉，这就叫“后进先出”</h4>
+    <h3>含义二：代码运行方式</h3>
+    <h4>stack的第二种含义是“调用栈(call stack)”，表示函数或子例程像积木一样存放，以实现层层调用</h4>
+    <h3>含义三：内存区域</h3>
+    <h4>stack的第三种含义是存放数据的一种内存区域。程序运行时，需要内存空间存放数据。一般来说，系统会划分出两种不同的内存空间：一种叫stack(栈)，另一种叫做heap(堆)</h4>
+    <script>
+        class Stack {
+        constructor() {
+        this.dataStore = [];
+        this.top = 0;
+        }
+
+        pop() {
+        return this.dataStore[--this.top];
+        }
+
+        push(ele) {
+        this.dataStore[this.top++] = ele;
+        }
+
+        peek() {
+        return this.dataStore[this.top - 1];
+        }
+
+        length() {
+        return this.top;
+        }
+
+        clear() {
+        this.top = 0;
+        }
+        }
+
+        var s = new Stack();
+        s.push("David");
+        s.push("Raymond");
+        s.push("Bryan");
+        console.log(s);
+
+        function mulBase(num, base) {
+        var s = new Stack();
+        do {
+        s.push(num % base);
+        num = Math.floor(num / base)
+        } while (num > 0);
+        var convert = '';
+        while (s.length()) {
+        convert += s.pop();
+        }
+        return convert;
+        }
+
+        console.log(mulBase(4, 2));
+        </script>
+</body>
+
+</html>

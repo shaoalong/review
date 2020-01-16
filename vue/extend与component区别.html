@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        // extend与component区别:
+        // vue.extend(options)返回一个“扩展实例构造器”，也就是预设了部分选项的Vue实例构造器
+        // var myVue = Vue.extend({
+        //     // 预设选项
+        // })
+        // var vm = new myVue({
+        //     // 其他选项
+        // })
+
+        // Vue.component({id, [definition]})是用来注册全局组件的方法，其作用是将通过Vue.extend生成的扩展实例构造器注册(命名)为一个组件，可以简单理解为
+        // 当在模板中遇到该组件名作为标签的自定义元素时，会自动调用类似于 new myVue这样的构造函数来生成组件实例，并挂载到自定义元素上
+        // Vue.component('my-component', Vue.extend({/* ... */})) //注册组件，传入一个扩展过的构造器
+        // Vue.component('my-component', {/* ... */}) //注册组件，传入一个选项对象(自动调用Vue.extend)
+        // var myComponent = Vue.component('my-component') //获取注册的组件(始终返回构造器)
+
+        // new myVue().$mount([element?]) element可为空，但他依旧能生成实例。那么问题来了，生成的实例不挂载到dom文档流里面有什么用呢？
+        // 没有关系！生成的实例里面有个$el这个参数，记录了生成的dom啊，这个dom你想插哪里就插哪里。（documend.bofy.appChild(实例.$el)）
+
+        // 总结：component是extend的亲民版，但是在实现某些特殊需求的时候，就需要用到extend，如alert组件，你肯定希望alert可以动态插入到body中
+        // 而不需要在dom文档流中放一个莫名其妙的alert，大部分时间他还是隐藏的。
+
+
+        // extends与mixins的区别:
+        // extends:允许声明扩展另一个组件(可以是一个简单的选项对象或构造函数),而无需使用Vue.extend。这主要是便于扩展单文件组件
+        // mixins:提供了一种非常灵活的方式，来分发组件中的服用功能。一个混入对象可以包含任意组件选项。当组件使用混入对象时，所有混入对象的选项将被"混合"进入该组件本身选项
+
+        // 其实mixins和extends都可以理解成继承，mixins接受对象或者数组(可理解为多继承),extends接收的是对象或者函数(可理解为单继承)
+        // const extend = {
+        //     data() {
+        //         return {
+        //             name: 'extend name'
+        //         }
+        //     },
+        //     created() {
+        //         console.log('extend created')
+        //     }
+        // }
+
+        // const mixin1 = {
+        //     data() {
+        //         return {
+        //             name: 'mixin1 name'
+        //         }
+        //     },
+        //     created() {
+        //         console.log('mixin1 created')
+        //     }
+        // }
+
+        // const mixin2 = {
+        //     data() {
+        //         return {
+        //             name: 'mixin2 name'
+        //         }
+        //     },
+        //     created() {
+        //         console.log('mixin2 created')
+        //     }
+        // }
+
+        // export default {
+        //     mixins: [mixin1, mixin2],
+        //     extends: extend,
+        //     name: 'app',
+        //     data() {
+        //         return {
+        //             name: 'name'
+        //         }
+        //     },
+        //     created() {
+        //         console.log('created')
+        //     }
+        // }
+
+        // 合并规则：
+        // 1.数据和方法对象在内部会进行递归合并，并在发生冲突时以组件数据优先
+        // 2.同名钩子函数将合并为一个数组，因此都将被调用。另外，混入对象的钩子将在组件自身钩子之前调用。
+    </script>
+</body>
+</html>

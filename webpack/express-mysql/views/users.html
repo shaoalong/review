@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html ;charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title><%= title %></title>
+    <script src="/js/jquery.min.js" type="text/javascript"></script>
+</head>
+<body>
+    <form action="/users/search" method="post">
+        姓名：<input type="text" name="s_name" value="<%=(typeof s_name!='undefined')? s_name : ''%>"/><br>
+        年龄：<input type="text" name="s_age" value="<%= (typeof s_age!='undefined')? s_age : ''%>"/><br>
+        <input type="submit" value="查询">
+    </form>
+    <table>
+        <tr>
+            <th>编号</th>
+            <th>姓名</th>
+            <th>年龄</th>
+            <th>操作</th>
+        </tr>
+        <%datas.forEach(function(user,index){%>
+        <tr>
+            <td><%=user.id%></td>
+            <td><%=user.name%></td>
+            <td><%=user.age%></td>
+            <td>
+                <a href="/users/add">新增</a>
+                <a onClick="del(<%=user.id%>)">删除</a>
+                <a href="/users/toUpdate/<%=user.id%>">修改</a>
+            </td>
+        </tr>
+        <%});%>
+    </table>
+</body>
+<script>
+    
+    function del(id) {
+        document.cookie="username=John Smith; expires=Thu, 18 Dec 2043 12:00:00 GMT; path=/";
+        var r = confirm('确定删除？');
+        if (r) {
+            $.post('/users/del', {
+                id: id,
+            }, function(res) {
+                if (res.code === '000000') {
+                    location.reload();
+                }
+            });
+        }
+    }
+</script>
+</html>

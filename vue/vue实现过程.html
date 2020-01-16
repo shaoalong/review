@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>vue实现过程</title>
+</head>
+
+<body>
+    <div id="app">
+        {{someVar}}
+    </div>
+    <script>
+        new Vue({
+            el: '#app',
+
+            data: {
+                someVar: 'init'
+            },
+
+            mounted() {
+                setTimeout(() => this.someVar = 'changed', 3000)
+            }
+
+        })
+        // 首次渲染，生成vnode，将其挂在到页面中
+        // vm.$mount(vm.$el) => render = compileToFunction(template).render => updateComponent() => vnode = render() => vm._update(vnode) => patch(vm.$el, vnode)
+        // 再次渲染，根据更新后的数据，再次生成vnode，将其更新到页面中
+        // updateComponent() => vnode = render() => vm._update(vnode) => patch(oldVnode, vnode)
+
+        // 第一阶段
+        // vm.$mount(vm.$el) => render = compileToFunction(template).render => updateComponent() => vnode = render() => vm._update(vnode) => patch(vm.$el, vnode)
+        // Vnode类：Vnode是虚拟DOM节点类，其实例vnode是一个包含渲染DOM节点所需要的一切信息的普通对象。
+        // 上述的 render() 方法调用后会生成 vnode 对象，这是第一次生成，将其称为 initVnode，结构如下（选取部分属性）：
+        // var initVnode = {
+        //     children: [{
+        //         children: undefined,
+        //         data: undefined,
+        //         elm: undefined,
+        //         tag: undefined,
+        //         text: 'init'
+        //     }],
+        //     data: {
+        //         attrs: {
+        //             id: 'app'
+        //         }
+        //     },
+        //     elm: undefined,
+        //     tag: 'div',
+        //     text: undefined,
+        // }
+        // 1.children是当前vnode的子节点(VNodes)数组，当前只有一个文本子节点
+        // 2.data是当前vnode代表的节点的各种属性，是createElement()方法的第二个参数
+        // 3.elm是根据vnode生成HTML元素挂载到页面中后对应的DOM节点，此时还没有挂载，所以为空
+        // 4.tag是当前vnode对应的html标签
+        // 5.text是当前vnode对应的文本或者注释
+        // text和children是互斥的，不会同时存在
+        // 生成vnode之后,就要根据其属性生成DOM元素并挂载到页面中,这就是patch()方法要做的事了
+
+        // patch(oldVnode, vnode) oldVnode:undefined/ELEMENT_NODE/VNode； vnode:undefined/VNode ---具体操作见:patch函数参数对应的操作.png
+        // 1.如果vnode为undefined，就要删除节点
+        // 2.如果oldVnode是undefined或者DOM节点，vnode是VNode实例的话，表示第一次渲染vnode，调用createElm()方法创建新节点
+        // 3.如果oldVnode和vnode都是VNode类型的话，就要调用patchVnode()方法来对oldVnode和vnode做进一步处理了。
+
+        // createElm(vnode, [], parentElm, refElm) 根据vnode的属性创建组件或者普通DOM元素，有如下几种处理方式：
+        // 1.调用createComponent()方法对component做处理
+        // 2.vnode.tag存在：
+        //     1).调用nodeOps.createElement(tag, vnode)创建DOM元素
+        //     2).调用createChildren()方法递归创建子节点
+        //     3).调用invokeCreateHooks()方法调用生命周期相关的create勾子处理vnode.data数据
+        // 3.vnode是文本类型，调用nodeOps.createTextNode(vnode.text)创建文本元素
+        // 对于2，3 这两种情况，最后都会调用 insert() 方法将生成的 DOM 元素挂载到页面中。此时，页面的 DOM 结构如下：
+        // <div id = "app" > 
+        //     {{someVar}}
+        // </div>
+        // <div id = "app" >
+        // init
+        // </div>
+        // 可以看到，原始的 DOM 元素还保留在页面中，所以在createElm() 方法调用之后，还会调用 removeVnodes() 方法，将原始的 DOM 元素删除掉。
+        // 这样， 就完成了首次视图的渲染。 在这个过程中， Vue 还会做一些额外的操作：
+        //     1.将 vnode 保存到 vm._vnode 属性上， 供再次渲染视图时与新 vnode 做比较
+        //     2.vnode 会更新一些属性：
+        // {
+        //     children: [
+        //         {
+        //             children: undefined,
+        //             data: undefined,
+        //             elm: Text, // text
+        //             tag: undefined,
+        //             text: 'init'
+        //         }
+        //     ],
+        //     data: {
+        //         attrs: {
+        //             id: 'app'
+        //         }
+        //     },
+        //     elm: HTMLDivElement, // div#app
+        //     tag: 'div',
+        //     text: undefined
+        // }
+        //     可以看到，vnode 及其子节点的 elm 属性更新为了页面中对应的 DOM 节点，不再是 undefined，也是为了再次渲染时使用。
+
+        // 第二阶段
+        // updateComponent() => vnode = render() => vm._update(vnode) => patch(oldVnode, vnode)
+        // 第二阶段渲染时，会根据更新后的 vm 数据，再次生成 vnode 节点，称之为 updateVnode，结构如下：
+        //     {
+        //         children: [
+        //             {
+        //                 children: undefined,
+        //                 data: undefined,
+        //                 elm: undefined,
+        //                 tag: undefined,
+        //                 text: 'changed'
+        //             }
+        //         ],
+        //         data: {
+        //             attrs: {
+        //                 id: 'app'
+        //             }
+        //         },
+        //         elm: undefined,
+        //         tag: 'div',
+        //         text: undefined
+        //     }
+        // 可以看到， updateVnode 与 最初生成的 initVnode 的区别就是子节点的 text 属性由 init 变为了 changed，正是符合我们预期的变化。
+        // 生成新的 vnode 之后， 还是要调用 patch 方法对 vnode 做处理， 不过这次参数发生了变化， 第一个参数不再是要挂载的DOM节点， 而是 initVnode， 本次 patch() 方法调用的流程如下：
+        // patch(oldVnode, vnode) => patchVnode(oldVnode, vnode) => updateChildren(elm, oldCh, ch) => patchVnode(oldCh,ch) => nodeOps.setTextContent(elm, vnode.text)
+        // 其中 oldVnode 就是第一阶段保存的 vm._vnode， elm 就是第一阶段更新的 elm 属性。
+        // 根据上面对 patch() 方法的分析， 此时 oldVnode 和 vnode 都是 VNode 类型， 所以调用 patchVnode() 方法做进一步处理。
+        
+        // patchVnode(oldVnode, vnode) 包含两个主要流程：
+        //     1.更新自身属性，调用 Vue 内置的组件生命周期 update 阶段的钩子方法更新节点自身的属性，类似之前的 invokeCreateHooks() 方法，这里不再展开说明
+        //     2.更新子节点，根据子节点的不同类型调用不同的方法
+        // 根据 vnode 的 children 和 text 属性的取值,大概分为这几类处理方式：
+        //     1.如果ch是text,那么就对DOM节点直接设置新的文本
+        //     2.如果ch为undefined，那就清空DOM节点的内容
+        //     3.如果ch是children类型，而oldCh是文本或者undefined，那么就要在DOM节点内新增节点
+        //     4.ch和oldCh都是children类型，那么就要调用updateChildren()方法来更新DOM元素的子节点
+
+        // updateChildren(elm, oldCh, ch) 方法是 Vnode 处理方法中最复杂也是最核心的方法即diff算法，它主要做两件事情：
+        //     1.递归调用 patchVnode 方法处理更下一级子节点
+        //     2.根据各种判断条件，对页面上的 DOM 节点进行尽可能少的添加、移动和删除操作
+        //    执行流程：（OS:newStartVnode,OE:oldEndVnode,S:newStartVnode,E:newEndVnode）
+        //         1.OS与S对比，如果是同一个Vnode，调用patchVnode()进行递归patch；头指针右移；
+        //         2.OE与E比较，如果是同一个Vnode，调用patchVnode()进行递归patch；尾指针左移；
+        //         3.OS与E比较，如果是同一个Vnode，调用patchVnode()进行递归patch；OS移到OE的后面；旧头指针右移，新尾指针左移；
+        //         4.OE与S比较，如果是同一个Vnode，调用patchVnode()进行递归patch；OE移到OS的前面；新头指针右移，旧尾指针左移；
+        //         5.否则，比较key值：
+        //             1).如果在newCh的Vnode没有带key，创建S指向的Vnode放在OS前面；新头指针右移；
+        //             2).如果在oldCh的key表中找到了S指向的Vnode带有的key，就把该带有key的oldCh中的Vnode移到OS前面；新头指针右移；
+        //             3).如果在oldCh的key表中找不到S指向的Vnode带有的key，创建S指向的Vnode放在OS前面；新头指针右移；
+        
+    </script>
+</body>
+
+</html>

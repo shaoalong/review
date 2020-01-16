@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>页面渲染</title>
+  <script type="text/javascript">
+    var i = 0;
+    while (i < 1000000000) {
+      i++
+    }
+  </script>
+</head>
+
+<body>
+  <iframe src="" frameborder="0"></iframe>
+  <img src="./页面渲染.png" alt="渲染">
+  <script>
+    // 页面渲染就是将url对应的各种资源通过浏览器渲染引擎的解析，输出可视化图像的过程
+    // 一个渲染引擎大致包括：
+    //   HTML解释器： 解释HTML语言的解释器， 本质是将HTML文本解释成DOM树（文档对象模型）
+    //   CSS解释器： 解释样式表的解释器， 其作用是将DOM中的各个元素对象加上样式信息， 从而为计算最后结果的布局提供依据。
+    //   布局： 将DOM和css样式信息结合起来， 计算它们的大小位置等布局信息， 形成一个能够表示这所有信息的内部表示模型即渲染树。
+    //   JavaScript引擎： JavaScript可以修改网页的内容， 也能修改CSS的信息， JavaScript引擎解释JavaScript代码并把代码的逻辑和对DOM和CSS的改动信息应用到布局中去， 从而改变渲染的结果。
+
+    // 基本过程：
+    //   1.解析html文件，创建dom树(dom tree)，构建DOM树完成后，触发DomContendLoaded事件
+    //   2.解析css，形成css对象模型(cssom)
+    //   3.将css与dom合并，构建渲染树（render tree）
+    //   4.布局(layout)
+    //   5.绘制(Painting)
+
+    // 重绘(repaint):重绘是改变不影响元素在网页中的位置的元素样式时，譬如background-color(背景色)， border-color(边框色)， visibility(可见性)，浏览器会根据元素的新属性重新绘制一次(这就是重绘，或者说重新构造样式)，使元素呈现新的外观。重绘不会带来重新布局，所以并不一定伴随重排
+    // 重排(Reflow):渲染对象在创建完成并添加到渲染树时，并不包含位置和大小信息。计算这些值的过程称为布局或重排。当改变影响到文本内容或结构，或者元素位置时，重排或者说重新布局就会发生
+    //   重排通常由一下时间触发：
+    //     1.DOM操作（元素添加、删除、修改或者元素顺序的改变）
+    //     2.内容变化，包括表单域内的文本改变
+    //     3.CSS属性的计算或改变
+    //     4.添加或删除样式表
+    //     5.更改“类”的属性
+    //     6.浏览器窗口的操作（缩放，滚动）
+    //     7.伪类激活（悬停）
+
+    // "重绘"不一定需要"重排"，比如改变某个网页元素的颜色，就只会触发"重绘"，不会触发"重排"，因为布局没有改变。
+    //   但是，"重排"必然导致"重绘"，比如改变一个网页元素的位置，就会同时触发"重排"和"重绘"，因为布局改变了。
+
+    // 渲染优化：
+    //   1.将多次改变样式属性的操作合并成一次操作
+    //   2.将需要多次重排的元素，position属性设为absolute或fixed，这样此元素就脱离了文档流，它的变化不会影响到其他元素。例如有动画效果的元素就最好设置为绝对定位
+    //   3.由于display属性为none的元素不在渲染树中，对隐藏的元素操作不会引发其他元素的重排。如果要对一个元素进行复杂的操作时，可以先隐藏它，操作完成后再显示。这样只在隐藏和显示时触发2次重排
+
+
+    // 在这里我们可以明确DOMContentLoaded所计算的时间，当文档中没有脚本时，浏览器解析完文档便能触发 DOMContentLoaded 事件；
+    // 如果文档中包含脚本，则脚本会阻塞文档的解析，而脚本需要等位于脚本前面的css加载完才能执行。在任何情况下，DOMContentLoaded 的触发不需要等待图片等其他资源加载完成。
+    // 在 DOM 树构建完成后，WebKit 会触发 “DOMContentLoaded” 事件，当所有资源都被加载完成后，会触发 “onload” 事件。
+
+    // DOMContentLoaded兼容写法
+    // function ready(fn) {
+    //   if (document.addEventListener) {
+    //     document.addEventListener('DOMContentLoaded', function () {
+    //       document.removeEventListener('DOMContentLoaded', arguments.callee, false);
+    //       fn();
+    //     }, false);
+    //   }
+
+    //   // 如果IE
+    //   else if (document.attachEvent) {
+    //     // 确保当页面是在iframe中加载时，事件依旧会被安全触发(iframe只支持onreadystatechange)
+    //     document.attachEvent('onreadystatechange', function () {
+    //       if (document.readyState == 'complete') {
+    //         document.detachEvent('onreadystatechange', arguments.callee);
+    //         fn();
+    //       }
+    //     });
+
+    //     // 如果是IE且页面不在iframe中时，轮询调用doScroll 方法检测DOM是否加载完毕
+    //     if (document.documentElement.doScroll && typeof window.frameElement === "undefined") {
+    //       try {
+    //         document.documentElement.doScroll('left');
+    //       } catch (error) {
+    //         return setTimeout(arguments.callee, 20);
+    //       };
+    //       fn();
+    //     }
+    //   }
+    // };
+  </script>
+</body>
+
+</html>

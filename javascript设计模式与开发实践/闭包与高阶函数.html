@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>闭包与高阶函数</title>
+</head>
+
+<body>
+    <div id='div1'>点击触发</div>
+    <script>
+        // 1.垃圾回收机制：垃圾收集器会按照固定的时间间隔周期性的执行这一操作：找出那些不再继续使用的变量，然后释放其占用的内存。
+        // 1).标记清除：是对于脱离作用域的变量进行回收。当进入作用域时，进行标记，离开作用域时，标记并回收这些变量。
+        //     js最常用的垃圾回收方式，当进入环境时就将这个变量标记为‘进入环境’。从逻辑上讲，永远不能释放进入环境的变量
+        //     所占有的内存，因为只要执行刘进入相应的环境，就有可能用到他们，而当变量离开环境时，则将其标记为‘离开环境’。
+        //     IE、Firefox、Opera、Chrome、Safari的js实现使用的都是标记清除的垃圾回收策略或相似的策略，只不过间隔时间不同。
+        //     function test() {
+        //         var a = 10; // 被标记，进入环境
+        //         var b = 20; // 被标记，进入环境
+        //     }
+        //     test(); // 执行完毕之后a、b又被标记离开环境，被回收。
+        // 2).引用计数：跟踪记录每个值被引用的次数。当声明了一个变量并将一个引用类型值赋给该变量，则这个值得引用次数就是1。
+        //     如果同一个值又被赋给另一个变量，则改制引用次数加1.相反如果包含对你这个值引用的变量又取得另外一个值，则这个值
+        //     的引用次数减1。当这个值的引用次数变成0时，则说明没有办法再访问这个值了，因此就可以将其占用的内存空间回收回来。
+        //     这样，当垃圾回收器下次再运行时，他就会释放那些引用次数为0的值所占的内存。
+        //     function test() {
+        //         var a = {}; // a的引用次数为0
+        //         var b = a; // a的引用次数为1
+        //         var c = a; // a的引用次数为2
+        //         var b = {}; // a的引用次数为1
+        //         var e = new Object(); //e的引用次数为1
+        //     }
+
+        // function fn() {
+        //     var a = {};
+        //     var b = {};
+        //     a.pro = b;
+        //     b.pro = a;
+        // }
+        // fn();
+        // 以上代码a和b引用次数都是2，fn()执行完以后，两个对象都已经离开环境，在标记清除方式下是没问题的，
+        // 但在引用计数策略下，因为a和b的引用次数不为0，所以不会被垃圾回收器回收。假如这个函数被重复多次调用，
+        // 就会导致大量内存得不到回收，造成内存泄漏。
+
+        // IE9以下BOM和DOM中的对象就是使用C++以COM（Component Object Model，即组件对象模型）对象的形式实现的，
+        // 而COM对象的垃圾回收机制采用的是计数策略。因此即使IE的javascript引擎是使用标记清除策略来实现的，但javascript访问COM对象依然
+        // 是基于引用计数策略的。换句话说，只要在IE中涉及COM对象，就会存在循环引用的问题。
+        // var element = document.getElementById('some_element');
+        // var myObject = new Object();
+        // myObject.element = element;
+        // element.somObject = myObject;
+        // 以上DOM元素与原生javascript对象之间建立了循环引用。即使例子中的DOM从页面中移除，内存也不会回收。
+        // 不过上面的问题也不是不能解决，我们可以手动切断他们的循环引用：
+        // myObject.element = null;
+        // element.somObject = null;
+        // 这样写代码的话就可以解决循环引用的问题，也就防止了内存泄漏的问题。
+
+        // 减少javascript中的垃圾回收：即减少内存分配。最好的处理方法就是：在初始化的时候新建对象，然后在后续的过程中尽量多的重用这下创建的对象。
+        // 内存分配的操作有：new 、 {} 、 []、function；
+        // object优化：重复引用，尽量避免new、{}的使用。遍历对象的所有属性并逐个删除，将对象清理为一个空对象，可以保证对象的重复利用。
+        // array优化：将[]赋值给一个数组对象，是清空数组的捷径，但需要注意的是，这种方式穿建了一个新的空对象，并且将原来的数组变成一小片内存垃圾！
+        //             实际上，将数组长度赋值为0（arr.length = 0）也能达到清空数组的目的，并且同时实现数组的重用，减少内存垃圾的产生。
+        // function优化：将方法作为返回值，就是一个动态创建方法的实例。
+
+
+        // 2.闭包：
+        //     1).作用域: 在javascript中，函数可以创建作用域。函数里面可以看到函数外的变量，
+        //             而函数外的变量无法看到函数内的变量。搜索变量顺序是从内到外。
+        //     2).生命周期：全局变量的生命周期是永久的，除非我们主动撤销这个全局变量。
+        //             而对于函数内定义的var变量，当函数退出时，这些变量就是去了价值，
+        //             他们会随着函数调用的结束而被销毁。
+        // 闭包的确会使一些数据无法被及时销毁。使用闭包的一部分原因是我们主动把一些变量创比在闭包中，因为可能在以后还需要
+        // 使用这些变量，把这些变量放在闭包中和全局作用域，对内存方面的影响是一致的，这里并不能说是内存泄漏，如果在将来需要
+        // 回收这些变量，我们就手动把这些变量设为null。将变量设置为null意味着切断变量与它此之前的值之间的链接。当垃圾收集器
+        // 下次运行时，就会删除这些值并且回收占用的内存。
+        // 跟闭包和内存泄漏有关系的地方是，使用闭包的同时比较容易形成循环引用，如果闭包的作用域链中保存着一些DOM节点，这时候
+        // 就有可能造成内存泄漏。但这本身并非闭包的问题，也并非javascript的问题。
+
+        // 运用闭包生成类型判断函数系
+        // var Type = {};
+        // for(var i = 0,type; type = ['String', 'Array', 'Number'][i++];) {
+        //     (function(type){
+        //         Type['is' + type] = function(obj){
+        //             return Object.prototype.toString.call( obj ) === '[object '+ type + ']';
+        //         }
+        //     })(type)
+        // }
+        // console.log(Type);
+        // console.log(Type.isArray([]));
+        // console.log(Type.isString('dddd'));
+        // console.log(Type.isNumber(12));
+
+        // 运用闭包创建具有缓存机制的乘法器
+        // var mult = (function(){
+        //     var cache = {};
+        //     var calculate = function(){
+        //         var a = 1;
+        //         for (var i = 0, l = arguments.length; i < l; i++) {
+        //             a = a * arguments[i];
+        //         }
+        //         return a;
+        //     };
+        //     return function(){
+        //         var args = Array.prototype.join.call(arguments, ',');
+        //         if (args in cache) {
+        //             return cache[args];
+        //         }
+        //         return cache[args] = calculate.apply(null, arguments);
+        //     };
+        // })();
+
+        // var sayHello;
+        // console.log(typeof (sayHey));//=>function    
+        // console.log(typeof (sayHollo));//=>undefined
+        // if (false) {
+        //     function sayHey() {
+        //         console.log("sayHey");
+        //     }
+        //     sayHello = function sayHo() {
+        //         console.log("sayHello");
+        // }
+        // } else {
+        //     function sayHey() {
+        //         console.log("sayHey2");
+        //     }
+        //     sayHello = function sayHo() {
+        //         console.log("sayHello2");
+        //     }
+        // }    
+        // sayHey();// => sayHey2    
+        // sayHello();// => sayHello
+
+        // console.log(mult(1, 3, 5));
+        // console.log(mult(1, 3, 5));
+
+        // 3.高阶函数：函数作为参数传递的函数、函数作为参数输出的函数。
+        // 1).函数作为参数传递:回调函数、sort
+        // 2).函数作为参数返回:判断数据的类型
+        // var isType = function(type){
+        //     return function(obj) {
+        //         return Object.prototype.toString.call(obj) == '[object '+ type +']';
+        //     }
+        // }
+        // var isArray = isType('Array');
+        // var isString = isType('String');
+        // console.log(isArray([]));
+        // console.log(isString(''));
+        // 3).高阶函数实现AOP(Aspect Oriented Programming即面向切面编程：把和核心业务逻辑模块无关的功能抽离出来，通常包括日志统计、异常处理等)
+        // Function.prototype.before = function(beforeFn) {
+        //     var self = this;
+        //     console.log('outer', this);
+        //     return function() {
+        //         console.log('inner', this);
+        //         beforeFn.apply(this, arguments);
+        //         return self.apply(this, arguments);
+        //     };
+        // };
+        // Function.prototype.after = function(afterFn) {
+        //     var self = this;
+        //     return function() {
+        //         var ret = self.apply(this, arguments);
+        //         afterFn.apply(this, arguments);
+        //         return ret;
+        //     }
+        // }
+        // var func = function() {
+        //     console.log(2);
+        // };
+        // func = func.before(function(){
+        //     console.log(1);
+        // }).after(function(){
+        //     console.log(3);
+        // });
+        // func();
+        // 4).currying:函数柯里化
+        // var currying = function(fn) {
+        //     var args = [];
+        //     return function() {
+        //         if (arguments.length === 0 ) {
+        //             return fn.apply(this, args);
+        //         } else {
+        //             [].push.apply(args, arguments);
+        //             return arguments.callee;
+        //         }
+        //     }
+        // };
+        // var cost = (function(){
+        //     var money = 0;
+        //     return function(){
+        //         for (var i = 0,l = arguments.length; i < l; i++) {
+        //             money += arguments[i];
+        //         }
+        //         return money;
+        //     }
+        // })();
+        // var realCost = currying(cost);
+        // console.log(realCost);
+        // console.log(realCost(100, 200)());
+        // console.log(realCost());
+        // 5).uncurrying:
+        // Function.prototype.uncurrying = function() {
+        //     var self = this;
+        //     return function() {
+        //         var obj = Array.prototype.shift.call(arguments);
+        //         return self.apply(obj, arguments);
+        //     }
+        // };
+        // var push = Array.prototype.push.uncurrying();
+        // (function(){
+        //     push(arguments, 4);
+        //     console.log(arguments);
+        // })(1, 2, 3);
+        // 6).函数节流：函数被频繁调用（window.onresize/mousemove/上传进度）
+        // var throttle = function(fn, interval){
+        //     var _self = fn,
+        //         timer,
+        //         firstTime = true;
+        //     return function(){
+        //         var args = arguments,
+        //             _me = this;
+        //         if (firstTime) {
+        //             _self.apply(_me, args);
+        //             return firstTime = false;
+        //         }
+        //         if (timer) {
+        //             return false;
+        //         }
+        //         timer = setTimeout(function(){
+        //             clearTimeout(timer);
+        //             timer = null;
+        //             _self.apply(_me, args);
+        //         }, interval || 500);
+        //     };
+        // };
+        // window.onresize = throttle(function(){
+        //     console.log(1);
+        // }, 500);
+        // 7).分时函数：在短时间内网页面中大量添加DOM节点，浏览器会卡顿甚至卡死。这时候需要分时分批添加。
+        // var arr = [];
+        // for (var i = 0, l = 1000; i < l; i ++) {
+        //     arr.push(i);
+        // }
+        // var timeChunck = function(data, fn, count) {
+        //     var timer;
+        //     var start = function() {
+        //         for (var i = 0; i < Math.min(count || 1, data.length); i++) {
+        //             var obj = data.shift();
+        //             fn(obj);
+        //         }
+        //     };
+        //     return function(){
+        //         timer = setInterval(function(){
+        //             if (data.length === 0) {
+        //                 return clearInterval(timer);
+        //             }
+        //             start();
+        //         }, 200);
+        //     }
+        // };
+        // var renderFrendList = timeChunck(arr, function(n) {
+        //     var div = document.createElement('div');
+        //     div.innerText = n;
+        //     document.body.appendChild(div);
+        // }, 8);
+        // renderFrendList(arr);
+        // 8).惰性加载函数：（例：浏览器嗅探）第一次调用有条件分支之后，在函数内部重写这个函数，重写之后的函数就是我们期望的addEvent函数，下一次进入的时候不在有条件判断。
+        // var addEvent = function(ele, type, handler){
+        //     if (window.addEventListener) {
+        //         addEvent = function(ele, type, handler) {
+        //             ele.addEventListener(type, handler, false);
+        //         }
+        //     } else if (window.attachEvent) {
+        //         addEvent = function(ele, type, handler) {
+        //             ele.attachEvent('on' + type, handler);
+        //         }
+        //     }
+        //     addEvent(ele, type, handler);
+        // };
+        // var div = document.getElementById('div1');
+        // addEvent(div, 'click', function(){
+        //     alert(1);
+        // });
+        // addEvent(div, 'click', function(){
+        //     alert(2);
+        // });
+
+        // var name = "The Window";
+
+        // var object = {
+        //     name: "My Object",
+
+        //     getNameFunc: function () {
+        //         return function () {
+        //             return this.name;
+        //         };
+
+        //     }
+
+        // };
+
+        // alert(object.getNameFunc()());
+
+
+        // var point = {
+        //     x: 0,
+        //     y: 0,
+        //     moveTo: function (x, y) {
+        //         this.x = x;
+        //         var moveX = function (x) {
+        //             this.x = x;
+        //         };
+        //         var moveY = function (y) {
+        //             this.y = y;
+        //         }
+        //         moveX(x);
+        //         moveY(y);
+        //     }
+        // };
+        // point.moveTo(1, 1);
+        // console.log(x, y)
+
+        var length = 10;
+
+        function fn() {
+            console.log(this.length);
+        }
+
+        var obj = {
+            length: 5,
+            method: function (fn) {
+                fn();
+                arguments[0]();
+            }
+        };
+
+        obj.method(fn, 1); //输出是什么？
+    </script>
+</body>
+
+</html>

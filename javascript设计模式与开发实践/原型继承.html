@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>原型继承</title>
+</head>
+<body>
+  <script>
+    // 1.所有的数据都是对象
+    //     基本类型：undefined、string、boolean、object、number、function、null
+    //     对象类型：Number、String、Boolean、Function、Object、Array
+    //     所有对象追根溯源都来自于Object.prototype。  
+    // 2.要得到一个对象，不是实例化类，而是找到一个对象作为原型并克隆他
+      // 在javascript中没有类的感念，但是为什么调用了new操作尼？
+      // 其实在javascript中函数作为普通函数又可作为构造器函数被调用。
+      // 用new创建对象的过程，实际上是先克隆Object.prototype,再进行一些其他额外操作的过程。
+    // function Person(name) {
+    //   this.name = name;
+    // }
+    // Person.prototype.getName = function() {
+    //   return this.name;
+    // }
+    // var a = new Person('along');
+    // console.log(a.name);
+    // console.log(a.getName());
+    // console.log(Object.getPrototypeOf(a) === Person.prototype);
+
+    // var objectFactory = function() {
+    //   console.log(arguments);
+    //   var obj = new Object();
+    //   var Constructor = [].shift.call(arguments);
+    //   obj.__proto__ = Constructor.prototype;
+    //   var ret = Constructor.apply(obj, arguments);
+    //   return typeof ret === 'object' ? ret : obj;
+    // };
+    // var b = objectFactory(Person, 'along');
+    // console.log(b);
+    // console.log(b.name);
+    // console.log(b.getName());
+    // console.log(Object.getPrototypeOf(b) === Person.prototype);
+
+    // 3.对象会记住它的原型
+      // 就javascript的真正实现来说，其实并不能说对象有原型，而只能说对象的构造器有原型。
+      // javascript给对象提供了一个名为__proto__的隐藏属性，默认指向他的构造器的原型对象。
+    // var a = new Object();
+    // console.log(a.__proto__ === Object.prototype);
+
+    // 4.如果对象无法响应某个请求，就会委托给他的构造器原型
+      // 虽然对象最初都是有Object.prototype对象克隆而来的，
+      // 但对象构造器的原型并不仅限于Object.prototype,而是可以动态指向其他对像。
+    // var A = function(){};
+    // A.prototype = { name: 'sven' };
+    // var B = function(){};
+    // B.prototype = new A();
+    // var b = new B();
+    // console.log(b.name);
+    // 引擎做了什么：
+      // 1).首先，尝试遍历对象b的所有属性，但没有找到name属性。
+      // 2).查找name属性的请求被委托给对象b的构造器的原型，他被b.__proto__记录着并且指向B.prototype,
+      //     而B.prototype被设置成一个通过new A()创建出来的对象。
+      // 3).在该对象依然没有找到name属性，于是请求被继续委托给这个对象构造器的原型A.prototype。
+      // 4).在A.prototype中找到了name属性，并返回它的值。
+
+    // 5.call、apply的区别
+    //   call(context, arg1, arg2, arg3);
+    //   apply(context, [arg1, arg2, arg3]);
+    //   如果context不是一个对象,就强制转换成对象，如果是null就指向window。
+    
+    // 6.面向对象（OOP:Object Oriented Programming）
+  </script>
+</body>
+</html>

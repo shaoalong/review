@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>链表</title>
+</head>
+
+<body>
+    <h3>数组与链表</h3>
+    <p>jsvascript中数组的主要问题是，他们被实现成立对象，与其他语言（比如c++和java）的数组相比，效率很低，
+        如果你发现数组在实际使用时很慢，就可以考虑使用链表来替代它。除了对数据的随机访问，链表几乎可以在任何可以使用一维数组的情况中。
+        如果需要随机访问，数组任然是更好的选择。
+    </p>
+    <h3>链表 ：</h3>
+    <p>链表是由一组节点组成的集合。每个节点都使用一个对象的引用指向他的后继。指向下一个接地啊的引用叫做链</p>
+    <h3>双向链表 ：</h3>
+    <p>节点有前驱和后驱，可实现双向遍历</p>
+    <script>
+        class Node {
+            constructor(element) {
+                this.element = element;
+                this.next = null;
+            }
+        }
+
+        class LList {
+            constructor() {
+                this.head = new Node('head');
+                this.head.next = this.head;
+                this.currentNode = this.head;
+            }
+
+            find(ele) {
+                let curNode = this.head;
+                while (curNode.next.element != 'head' && curNode.next != ele) {
+                    curNode = curNode.next;
+                }
+                return curNode;
+            }
+
+            insert(newEle, ele) {
+                const currNode = this.find(ele);
+                const newNode = new Node(newEle);
+                newNode.next = currNode.next;
+                currNode.next = newNode;
+            }
+
+            findPrevious(ele) {
+                let curNode = this.head;
+                while (curNode.next.element != 'head' && curNode.next.element != ele) {
+                    curNode = curNode.next;
+                }
+                return curNode;
+            }
+
+            remove(ele) {
+                const preNode = this.findPrevious(ele);
+                if (preNode.next.element != 'head') {
+                    preNode.next = preNode.next.next;
+                }
+            }
+
+            display() {
+                let curNode = this.head;
+                let result = '';
+                while (curNode.next.element != 'head') {
+                    result += ' > ' + curNode.element;
+                    curNode = curNode.next;
+                }
+                result += ' > ' + curNode.element
+                console.log(result)
+            }
+
+            findEleReversePos(index) {
+                let pointer1 = this.head;
+                let pointer2 = this.head;
+                while (index > 0 && pointer1.next.element != 'head') {
+                    pointer1 = pointer1.next;
+                    index--;
+                }
+
+                while (pointer1.next.element != 'head') {
+                    pointer2 = pointer2.next;
+                    pointer1 = pointer1.next;
+                }
+
+                return pointer2.element;
+            }
+
+            length() {
+                let curNode = this.head;
+                let n = 0;
+                while (curNode.next.element != 'head') {
+                    curNode = curNode.next;
+                    n++;
+                }
+                return n;
+            }
+
+            moveTo(offset) {
+                while (offset > 0) {
+                    if (this.currentNode.next.element === 'head') {
+                        this.currentNode = this.currentNode.next.next;
+                    } else {
+                        this.currentNode = this.currentNode.next;
+                    }
+                    offset--;
+                }
+            }
+        }
+
+        const cities = new LList();
+        cities.insert("Conway", "head");
+        cities.insert("Russellville", "Conway");
+        cities.insert("Carlisle", "Russellville");
+        cities.insert("Alma", "Carlisle");
+        cities.display();
+        cities.remove("Russellville");
+        cities.display();
+        console.log(cities.findEleReversePos(3))
+
+
+        const ysfList = (nums, offset, leftNum) => {
+            let i = 2;
+            const person = new LList();
+            person.insert('person_1', 'head');
+            while (nums > 0) {
+                person.insert('person_' + i, 'person_' + (i - 1))
+                i++;
+                nums--;
+            }
+            debugger;
+            while (person.length() > leftNum) {
+                person.moveTo(offset);
+                person.remove(person.currentNode.element);
+                person.display();
+                console.log('======')
+            }
+        }
+        ysfList(40, 3, 3);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>集合</title>
+</head>
+
+<body>
+    <h3>集合是一种包含不同元素的数据结构；集合两个重要特性：无序、不重复</h3>
+    <script>
+        class Set {
+            constructor(arr) {
+                this.dataStore = [];
+                if (arr instanceof Array) {
+                    for (var i = 0; i < arr.length; i++) {
+                        this.add(arr[i]);
+                    }
+                }
+            }
+
+            add(element) {
+                if (this.dataStore.indexOf(element) === -1) {
+                    this.dataStore.push(element);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            remove(element) {
+                const index = this.dataStore.indexOf(element);
+                if (index > -1) {
+                    this.dataStore.splice(index, 1);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            contains(element) {
+                if (this.dataStore.indexOf(element) > -1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            union(set) {
+                const tempSet = new Set();
+                for (var i = 0; i < this.dataStore.length; i++) {
+                    tempSet.add(this.dataStore[i]);
+                }
+
+                for (let i = 0; i < this.dataStore.length; i++) {
+                    if (!tempSet.contains(set.dataStore[i])) {
+                        tempSet.add(set.dataStore[i])
+                    }
+                }
+
+                return tempSet;
+            }
+
+            intersect(set) {
+                const tempSet = new Set();
+                for (var i = 0; i < this.dataStore.length; i++) {
+                    if (set.contains(this.dataStore[i])) {
+                        tempSet.add(this.dataStore[i]);
+                    }
+                }
+                return tempSet;
+            }
+
+            size() {
+                return this.dataStore.length;
+            }
+
+            subset(set) {
+                if (set.size() > this.size()) {
+                    for (var member of this.dataStore) {
+                        if (!set.contains(member)) {
+                            return false;
+                        }
+                    }
+                } else {
+                    return false;
+                }
+                return true;
+            }
+
+            difference(set) {
+                const tempSet = new Set();
+                for (var i = 0; i < this.dataStore.length; i++) {
+                    if (!set.contains(this.dataStore[i])) {
+                        tempSet.add(this.dataStore[i]);
+                    }
+                }
+                return tempSet;
+            }
+        }
+
+        const intersect = (nums1, nums2) => {
+            const map = {}
+            const res = []
+            for (let n of nums1) {
+                if (map[n]) {
+                    map[n]++
+                } else {
+                    map[n] = 1
+                }
+            }
+            for (let n of nums2) {
+                if (map[n] > 0) {
+                    res.push(n)
+                    map[n]--
+                }
+            }
+            return res
+        }
+
+        
+
+        var arr1 = [1, 2, 3];
+        var arr2 = [1, 1, 3, 4, 5];
+        var arr3 = [1, 1, 3, 6, 7];
+
+        var arr = [arr1,arr2,arr3]
+        var result = arr.reduce(function(result, value) {
+            return intersect(result, value)
+        })
+        console.log(result)
+    </script>
+</body>
+
+</html>

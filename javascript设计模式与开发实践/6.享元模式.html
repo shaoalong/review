@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>享元模式</title>
+</head>
+<body>
+    <script>
+        // 享元（flyweight）模式：是一种用于性能优化的模式，‘fly’在这里是苍蝇的意思，意为蝇量级。
+            // 核心是运用刚想计数有效支持大量细粒度的对象。
+        // 适应性：
+            // 1.一个程序使用了大量的相似对象
+            // 2.由于使用大量对象，造成很大的内存开销
+            // 3.对象的大多数状态都可以变成外部状态
+            // 4.剥离出对象的外部状态后，可以用相对较少的共享对象取代大量对象。
+        // 享元模式是为了解决性能问题而生的模式，这跟大部分模式的诞生原因都不一样。在一个存在大量相似对象的系统中，
+        // 享元模式可以很好的解决大量对象带来的性能问题。         
+           
+        // 内部状态与外部状态：
+        //     1.内部状态储存于对象内部。
+        //     2.内部状态可以被一些对象共享。
+        //     3.内部状态独立于具体的场景，通常是不可改变的。
+        //     4.外部状态取决于具体的场景，并根据场景而变化，外部状态不能共享。
+        // 剥离了外部状态的对象成为共享对象，外部状态在必要时被传入共享对象来组装成一个完整的对象。
+        // 虽然组装外部状态成为一个完整的对象需要花费 一定的时间，但却可以大大减少了系统的对象数量，相比之下，这点时间或许是微不足道的。
+        // 因此，享元模式是一种用事件换空间的优化方式。通常来讲，内部状态有多少种组合，系统中便最多存在多少个对象。
+        // 例：微云上传文件
+            // 共享对象 
+            var Upload = function(uploadType) {
+                this.uploadType = uploadType;
+            };
+            Upload.prototype.delFile = function(id) {
+                UploadManager.setExternalState(id, this);
+                if (this.fileSize < 3000) {
+                    return this.dom.parentNode.removeChild(this.dom);
+                }
+                if (window.confirm('确定删除该文件吗？' + this.fileName)) {
+                    return this.dom.parentNode.removeChild(this.dom);
+                }
+            };
+            // 工厂进行对象实例化：如果某种内部状态对应的共享对象一杯创建过，那么直接返回这个对象，否则创建一个新对象。
+            var UploadFactory = (function() {
+                var createFlyWeightObj = {};
+                return {
+                    created: function(uploadType) {
+                        if (createFlyWeightObj[uploadType]) {
+                            return createFlyWeightObj[uploadType];
+                        }
+                        return createFlyWeightObj[uploadType] = new Upload();
+                    },
+                };
+            })();
+            // 管理器封装外部状态：负责向UploadFactory提交创建对象的请求，并用一个uploadDatabase对象存放所有upload对象的外部状态，
+                // 以便在程序运行过程中给upload共享对象设置外部状态。
+            var UploadManager = (function() {
+                var uploadDatabase = {};
+                return {
+                    add: function(id, uploadType, fileName, fileSize) {
+                        var flyWeightObj = UploadFactory.created(uploadType);
+                        var dom = document.createElement('div');
+                        dom.innerHTML = '<span>文件名称：' + fileName + ',文件大小：' + fileSize + '</span>' +
+                                '<button class="delFile">删除</button>';
+                        dom.querySelector('.delFile').onclick = function() {
+                            flyWeightObj.delFile(id);
+                        };
+                        document.body.appendChild(dom);
+                        uploadDatabase[id] = {
+                            fileSize: fileSize,
+                            fileName: fileName,
+                            dom: dom,
+                        };
+                        return flyWeightObj;
+                    },
+                    setExternalState: function(id, flyWeightObj){
+                        var uploadData = uploadDatabase[id];
+                        for (var i in uploadData) {
+                            flyWeightObj[i] = uploadData[i];
+                        }
+                    },
+                };
+            })();
+
+            var id = 0;
+            var startUpload = function(uploadType, files) {
+                for (var i = 0, file;file = files[i++];) {
+                    var uploadObj = UploadManager.add(++id, uploadType, file.fileName, file.fileSize);
+                }
+            }
+
+            startUpload('plugin',[
+                {
+                    fileName: '1.txt',
+                    fileSize: 1000,
+                },
+                {
+                    fileName: '2.txt',
+                    fileSize: 3000,
+                },
+                {
+                    fileName: '3.txt',
+                    fileSize: 5000,
+                },
+            ]);
+
+            startUpload('flash',[
+                {
+                    fileName: '4.txt',
+                    fileSize: 1000,
+                },
+                {
+                    fileName: '5.txt',
+                    fileSize: 3000,
+                },
+                {
+                    fileName: '6.txt',
+                    fileSize: 5000,
+                },
+            ]);
+                
+        // 对象池：维护一个装载空闲对象的池子里，如果需要对象的时候，不是直接new，而是转从对象池里获取。
+        //     如果池子里没有空闲对象，则创建一个新对象，当获取出的对象完成它的职责之后，再进入池子等待被下次获取。
+        //     对象池技术应用非常广泛，HTTP连接池和数据库连接池都是其代表应用。在web前端开发中，对象池使用最多的场景
+        //     大概就是跟DOM有关的操作。很多空间和时间都消耗在了DOM节点上。
+        //     譬如地图应用开发中的标志地名的小气泡，搜索一地名出现两个气泡，搜索下一个地名出现了6个地名。这时只需要再创建4个气泡。
+        var objectPoolFactory = function(createObjFn) {
+            var objectPool = [];
+            return {
+                create: function() {
+                    var obj = objectPool.length === 0 ? createObjFn.apply(this, arguments) : objectPool.shift();
+                    return obj;
+                },
+                recover: function(obj) {
+                    objectPool.push(obj);
+                },
+            }
+        };
+        var iframeFactory = objectPoolFactory(function() {
+            var iframe = document.createElement('iframe');
+            document.body.appendChild(iframe);
+            iframe.onload = function() {
+                iframe.onload = null;
+                iframeFactory.recover(iframe);
+            };
+            return iframe;
+        });
+
+        var iframe1 = iframeFactory.create();
+        iframe1.src = 'http://baidu.com';
+
+        var iframe2 = iframeFactory.create();
+        iframe2.src = 'http://links.chinahrd.net/';
+
+        setTimeout(function() {
+            var iframe3 = iframeFactory.create();
+            iframe3.src = 'http:163.com';
+        }, 3000);
+    </script>
+    
+</body>
+</html>

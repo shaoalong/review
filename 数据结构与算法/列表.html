@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>列表</title>
+</head>
+
+<body>
+    <h3>如果数据存储的顺序不重要，也不必对数据进行查找，那么列表就是一种再好不过的数据结构</h3>
+    <script>
+        class List {
+            constructor() {
+                this.dataStore = [];
+                this.listSize = 0;
+                this.position = 0;
+            }
+
+            push(element) {
+                this.dataStore.push(element);
+                this.listSize++;
+            }
+
+            shift() {
+                this.listSize--;
+                return this.dataStore.shift();
+            }
+
+            insert(data, index) {
+                if (listSize > index) {
+                    this.dataStore.splice(index, 0, data);
+                    this.listSize++;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            find(data) {
+                const index = this.dataStore.indexOf(data);
+                return index > -1 ? index : false;
+            }
+
+            contain(data) {
+                if (this.find(data)) {
+                    return true
+                }
+                return false;
+            }
+
+            remove(data) {
+                const index = this.find(data);
+                if (index) {
+                    this.dataStore.splice(index, 1);
+                    this.listSize--;
+                    return true;
+                }
+                return false;
+            }
+
+            clear() {
+                this.dataStore.length = 0;
+                this.position = 0;
+                this.listSize = 0;
+            }
+
+            front() {
+                this.position = 0;
+            }
+
+            back() {
+                this.position = this.listSize - 1;
+            }
+
+            prev() {
+                if (this.position > 0) {
+                    this.position--;
+                }
+            }
+
+            next() {
+                if (this.position < this.listSize - 1) {
+                    ++this.position;
+                }
+            }
+
+            currPosition() {
+                return this.position;
+            }
+
+            moveTo(pos) {
+                this.position = pos;
+            }
+
+            getElement() {
+                return this.dataStore[this.position];
+            }
+        }
+    </script>
+</body>
+
+</html>

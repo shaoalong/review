@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>图</title>
+</head>
+<body>
+    <script>
+     class Graph {
+         constructor(v) {
+             this.vertices = v;
+             this.edges = 0;
+             this.adj = [];
+             this.marked = [];
+             this.edgeTo = [];
+             for (var i = 0; i < this.vertices; i++) {
+                 this.marked[i] = false;
+                 this.adj[i] = [];
+             }
+         }
+
+         addEge(a, b) {
+             this.adj[a].push(b);
+             this.adj[b].push(a);
+             this.edges++;
+         }
+
+         dfs(v) {
+            this.marked[v] = true;
+            if (this.adj[v] != undefined) {
+                console.log("Visited vertex:  " + v)
+            }
+            var adj = this.adj[v];
+            for (var i = 0; i < adj.length; i++) {
+                if (!this.marked[adj[i]]) {
+                    this.dfs(adj[i]);
+                }
+            }
+         }
+
+         bfs(v) {
+            this.marked[v] = true;
+            var queue = [v];
+            while(queue.length) {
+                var s = queue.shift();
+                if (s != undefined) {
+                    console.log("Visisted vertex:  " + s)
+                }
+                var adj = this.adj[s];
+                for(var i = 0; i < adj.length; i++) {
+                    if (!this.marked[adj[i]]) {
+                        this.edgeTo[adj[i]] = s;
+                        this.marked[adj[i]] = true;
+                        queue.push(adj[i]);
+                    }
+                }
+            }
+         }
+
+         hasPathTo(v) {
+            return this.marked[v];
+         }
+
+         pathTo(v) {
+             var source = 0;
+             if (!this.hasPathTo(v)) {
+                 return undefined;
+             }
+             var path = [];
+             for (var i = v; i != source; i = this.edgeTo[i]) {
+                 path.push(i);
+             }
+             path.push(source)
+             return path;
+         }
+     }
+
+     var g = new Graph(6);
+     g.addEge(0,1);
+     g.addEge(1,2);
+     g.addEge(3,2);
+     g.addEge(2,4);
+     g.addEge(3,5);
+     g.bfs(0);
+     var paths = g.pathTo(4)
+     var str = '';
+     while (paths.length) {
+         if (paths.length > 1) {
+            str += paths.pop() + '->'
+         } else {
+            str += paths.pop()
+         }
+     }
+     console.log(str)
+
+   
+
+    
+
+    </script>
+</body>
+</html>

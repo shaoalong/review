@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        // 箭头函数的 this 永远指向其上下文的  this ，任何方法都改变不了其指向，如 call() ,  bind() ,  apply() 
+        // 普通函数的this指向调用它的那个对象
+
+        // 对象不构成单独的作用域，导致jumps箭头函数定义时的作用域就是全局作用域
+        // var lives = 5;
+        // const cat = {
+        //     lives: 9,
+        //     jumps: () => {
+        //         this.lives--;
+        //     },
+        //     jumps2(){
+        //         this.lives--;
+        //     },
+        // }
+        // // cat.jumps()
+        // cat.jumps2()
+        // console.log(lives)
+        // console.log(cat.lives)
+
+
+        // var name = "The Window";
+        // var object = {
+        //     name: "My Object",
+        //     getNameFunc: function () {
+        //         return function () {
+        //             return this.name;
+        //         };
+        //     },
+        //     getNameFunc2: function () {
+        //         return () => {
+        //             return this.name;
+        //         };
+        //     }
+        // };
+        // // alert(object.getNameFunc()());
+        // alert(object.getNameFunc2()());
+
+
+        // var point = {
+        //     x: 0,
+        //     y: 0,
+        //     z: 0,
+        //     moveTo: function (x, y) {
+        //         this.x = x;
+        //         var moveX = function (x) {
+        //             this.x = x;
+        //         };
+        //         var moveY = function (y) {
+        //             this.y = y;
+        //         }
+        //         moveX(x);
+        //         moveY(y);
+        //     }
+        // };
+        // point.moveTo(1, 1);
+        // console.log(x, y)
+        // console.log(point)
+
+
+        // var length = 10;
+        // function fn() {
+        //     console.log(this.length);
+        // }
+        // var obj = {
+        //     length: 5,
+        //     method: function (fn) {
+        //         fn();
+        //         arguments[0]();
+        //     }
+        // };
+        // obj.method(fn, 1); //输出是什么？
+
+        // 匿名函数this指向window
+        // var a = 1;
+        // (function () {
+        //     console.log(this.a)
+        // })();
+
+        (function () {
+            function invoke() {
+                console.log(this)
+                // function createName() {
+                //     console.log(this.familyName + ' ' + this.customName)
+                //     return this.familyName + ' ' + this.customName
+                // }
+                const createName = () => this.familyName + ' ' + this.customName
+
+                this.name = createName()
+                this.say = function () {
+                    console.log(this.name)
+                }
+            }
+
+            const person = {
+                familyName: 'Adrew',
+                customName: 'Karm',
+                invoke,
+            }
+
+            person.invoke()
+            person.say()
+
+            console.log(this.familyName + ' ' + this.customName)
+        }).call({
+            familyName: 'Jimy',
+            customName: 'Hardsam',
+        })
+    </script>
+</body>
+
+</html>

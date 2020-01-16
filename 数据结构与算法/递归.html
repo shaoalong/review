@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>递归</title>
+</head>
+
+<body>
+    <h2>
+        递归的基本思想，是把规模较大的一个问题，分解成规模较小的多个子问题去解决，而每一个子问题又可以继续拆分成多个更小的子问题。最重要的一点就是假设子问题已解决了，
+        现在要基于已解决的子问题来解决当前问题；或者说，必须先解决子问题，再基于子问题来解决当前问题。
+    </h2>
+
+    <h2>调用帧：</h2>
+    <h3>
+        函数调用会在内存形成一个“调用记录”，又称“调用帧”（call frame）,保存调用位置和内部变量等信息。如果函数A的内部调用了函数B，那么在A的调用帧的上方，还会形成一个B调用帧。
+        等到B运行结束，将结果返回到A，B的调用帧才会消失。如果B内部还调用了函数C，那就还要一个C调用帧，以此类推。所有的调用帧，就形成一个“调用栈”（call stack）。
+        ESP：栈指针寄存器（extended stack pointer），其内存放着一个指针，该指针永远指向系统栈最上面一个栈帧的栈顶。
+        EBP：基址指针寄存器（extended base pointer），其内存放着一个指针，该指针永远指向系统栈最上面一个栈帧的底部。
+    </h3>
+
+    <h2>函数的递归调用和普通函数调用是一样的。当程序执行到某个函数时，将这个函数进行入栈操作，在入栈前通常要完成三件事。</h2>
+    <h3>1.将所有的实参，返回地址等信息传递给被调函数保存。</h3>
+    <h3>2.为被调函数的局部变量分配存储区。</h3>
+    <h3>3.将控制转移到被调函数入口。</h3>
+    <h2>当函数完成后会进行出栈操作，出栈之前同样要完成三件事</h2>
+    <h3>1.保存被调用函数的计算结果。</h3>
+    <h3>2.释放被调用函数的数据区。</h3>
+    <h3>3.依照被调用函数保存的返回地址将控制转移到调用函数。</h3>
+    <h2>上述操作必须通过栈来实现，即将整个过程的运行空间安排在一个栈中。每当运行一个函数时，将在栈顶分配空间，函数退出后，释放这块空间。所以当前运行的函数一定在栈顶</h2>
+
+
+    <h2>尾调用：就是指某个函数的最后一步是调用另一个函数。</h2>
+    <h3>
+        由于函数是最后一步操作，所以不需要保留外层函数的调用帧，因为调用位置、内部变量等信息不回再用到了，只要直接用内层函数的调用帧取代外层函数的调用帧就可以了。
+        function f() {
+        const m = 1;
+        const n = 2;
+        return g(m + n);
+        }
+        f();
+
+        等同于：
+
+        function f() {
+        return g(3);
+        }
+        f();
+
+        等同于：
+
+        g(3);
+
+        上面代码中，如果函数g不是尾调用，函数f就需要保存内部变量m和n的值、g的调用位置等信息。单由于调用g之后，函数就结束了，所以执行到最后一步， 完全可以删除f的调用帧，只保留g的调用帧。
+        这就叫“尾调用优化”，即只保留内层函数的调用帧。如果所有函数都是尾调用，那么完全可以做到每次执行时，调用帧只有一项，这将大大的节省内存。这就是“尾调用优化”的意义。
+        <i>注意，只有不再用到外层函数的内部变量，内层函数的调用帧才会取代外层函数的调用帧，否则就无法进行“尾调用优化”</i>
+    </h3>
+    <h2>尾递归：函数调用自己成为递归，如果尾调用自己，就称为尾递归。</h2>
+    <h3>递归非常耗费内存，因为需要同时保存成千上万个调用帧，很容易发生“栈溢出”（stack overflow）。但对于尾递归来说，由于只存在一个调用帧，所以永远不会发生“栈溢出”错误。</h3>
+    <script>
+        // 汉诺塔 a(n) -> b(n) : a(n-1) -> c(n-1) => a(1) -> b(1) => c(n-1) -> b(1 + (n-1))
+        function hanoi(n, a, b, c) {
+            if (n > 0) {
+                hanoi(n - 1, a, c, b);
+                b.push(a.pop());
+                hanoi(n - 1, c, b, a)
+            }
+        }
+
+        const arr1 = [1, 2, 3, 4];
+        const arr2 = [];
+        const arr3 = [];
+
+        hanoi(4, arr1, arr2, arr3)
+        console.log(arr1, arr2, arr3)
+
+        // 阶乘
+        function fact(n) {
+            if (n === 1) {
+                return 1;
+            } else {
+                return n * fact(n - 1)
+            }
+        }
+
+        // 阶乘（尾递归）
+        function factTail(n, PreResult = 1) {
+            if (n === 1) {
+                return PreResult;
+            } else {
+                return factTail(n - 1, n * PreResult)
+            }
+        }
+
+        // 菲波那切数列
+        function fbi(n) {
+            if (n < 2) {
+                return 1;
+            } else {
+                return fbi(n - 1) + fbi(n - 2)
+            }
+        }
+
+        // 菲波那切数列（尾递归）
+        function fbiTail(n, prev1 = 1, prev2 = 1) {
+            if (n < 2) {
+                return prev2;
+            } else {
+                return fbiTail(n - 1, prev2, prev1 + prev2)
+            }
+        }
+
+
+
+
+        function test() {
+            var rest = Array.prototype.slice.call(arguments);
+            var fn = rest.shift();
+            var start = new Date().getTime();
+            console.log(fn.apply(null, rest))
+            var end = new Date().getTime();
+            console.log(end - start, 'ms')
+        }
+
+
+        test(fbi, 30)
+        test(fbiTail, 30)
+    </script>
+</body>
+
+</html>

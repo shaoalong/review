@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>测试浏览器渲染</title>
+    <script src="/domcontentload.js"></script>
+    <script>
+        var start = new Date();
+        ready(function() {
+            var time = new Date() - start;
+            console.log('DOMContentLoaded 在' + time + 'ms后触发' )
+        });
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     var time = new Date() - start;
+        //     console.log('DOMContentLoaded 在' + time + 'ms后触发' )
+        // })
+        window.addEventListener('load', function() {
+            var time = new Date() - start;
+            console.log('load 在' + time + 'ms后触发' )
+        })
+    </script>
+</head>
+<body>
+    <iframe src="/frame.html" frameborder="0"></iframe>
+    <p>First Line</p>
+    <script src="/yellow.js"></script> <!-- 延迟 5s -->
+    <p>Second Line</p>
+    <link rel="stylesheet" href="/red.css">  <!-- 延迟 15s -->
+    <p>Third Line</p>
+    <script src="/blue.js"></script> <!-- 延迟 10s -->
+    <p>Fourth Line</p>
+    <link rel="stylesheet" href="/green.css"> <!-- 延迟 20s -->
+    <img src="/img.png"> <!-- 延迟 25s -->
+    <p>Fifth Line</p>
+    <script>
+        console.log('inline script')
+        console.log('index frameElement', window.frameElement)
+    </script>
+</body>
+</html>
+
+
+<!-- 
+    总结：
+    1.JS 会阻塞后续 DOM 解析/构建以及其它资源(如 CSS，JS 或图片资源)的加载。
+    2.CSS 不会阻塞后续 DOM 结构的解析/构建，不会阻塞其它资源(如图片)的加载，但是会阻塞 DOM 渲染和 JS 文件的执行。
+    3.现代浏览器很聪明，会进行 prefetch 优化，浏览器在获得 html 文档之后会对页面上引用的资源进行提前下载。(注意仅仅只是提前下载)
+    4.js的执行依赖前面的样式。即只有前面的样式全部下载完成后才会执行js，但是此时外链css和外链js是并行下载的    
+        JS 代码在执行前，浏览器必须保证在 JS 之前的所有 CSS 样式都解析完成，不然不就乱套了，前面的 CSS 样式可能会覆盖 JS 文件中定义的元素样式，这是 CSS 阻塞后续 JS 执行的根本原因。
+    
+
+    DOMContentLoaded：当初始的 HTML 文档被完全加载和解析完成之后，DOMContentLoaded 事件被触发，而无需等待样式表、图像和子框架的完成加载。意思是HTML下载、解析完毕之后就触发。
+        ！！！html文档加载完毕，并且 html 所引用的内联 js、以及外链 js 的同步代码都执行完毕后触发。！！！
+    load： 应该仅用于检测一个完全加载的页面 当一个资源及其依赖资源已完成加载时，将触发load事件。意思是页面的html、css、js、图片等资源都已经加载完之后才会触发 load 事件。
+        ！！！当页面 DOM 结构中的 js、css、图片，以及 js 异步加载的 js、css 、图片都加载完成之后，才会触发 load 事件。！！！
+
+    注意: chrome环境下 DOMContentLoaded还要等css文件解析之后执行，mozila环境下 DOMContentLoaded不需要等css文件解析。
+          chrome环境下 所有资源并行加载，mozila环境下js与css并行且优先加载，其他资源在其加载之后加载。
+--> 

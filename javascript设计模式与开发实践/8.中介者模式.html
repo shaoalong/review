@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>中介者模式</title>
+</head>
+<body>
+    <div id="goodsChoose">
+        选择颜色：<select id="colorSelector">
+            <option value="">请选择</option>
+            <option value="red">红色</option>
+            <option value="blue">蓝色</option>
+        </select>
+        选择内存：<select id="memorySelector">
+            <option value="">请选择</option>
+            <option value="32G">32G</option>
+            <option value="64G">64G</option>
+        </select>
+        选择CPU：<select id="cpuSelector">
+                <option value="">请选择</option>
+                <option value="800">800</option>
+                <option value="801">801</option>
+            </select>
+        输入购买数量： <input type="text" id="numberInout">
+        <br/>
+        <br/>
+
+        您选择的颜色：<div id="colorInfo"></div><br/>
+        您选择的内存：<div id="memoryInfo"></div><br/>
+        您选择的CPU：<div id="cpuInfo"></div><br/>
+        您输入的数量：<div id="numberInfo"></div><br/>
+        <button id='nextBtn' disabled='true'>请选择手机的颜色和购买数量</button>
+    </div>
+    <script>
+        // 中介者模式：中介者模式的作用就是接触对象与对象之间的紧耦合关系。增加一个中介者对象后，所有的相关对象都通过中介者对象来通信，
+        //     而不是相互引用，所以当一个对象发生改变时，只需要通知中介者对象即可。中介者使个对象之间耦合松散，而且可以独立地改变他们
+        //     之间的交互。中介者模式使网状的多对多关系变成了 相对简单的一对多关系。
+        
+        // 例:泡泡堂
+            // function Player(name, teamColor) {
+            //     this.name = name;
+            //     this.teamColor = teamColor;
+            //     this.state = 'alive';
+            // }
+            // Player.prototype.win = function() {
+            //     console.log(this.name + 'win');
+            // }
+            // Player.prototype.lose = function() {
+            //     console.log(this.name + 'lose');
+            // }
+            // Player.prototype.die = function() {
+            //     this.state = 'dead';
+            //     playerDirector.receiveMessage('playerDead', this);
+            // }
+            // Player.prototype.remove = function() {
+            //     playerDirector.receiveMessage('removePlayer', this);
+            // }
+            // Player.prototype.changeTeam = function(color) {
+            //     playerDirector.receiveMessage('changeTeam', this, color);
+            // }
+            
+            // var playerFactory = function(name, teamColor) {
+            //     var newPlayer = new Player(name, teamColor);
+            //     playerDirector.receiveMessage('addPlayer', newPlayer);
+            //     return newPlayer; 
+            // };
+
+            // var playerDirector = (function() {
+            //     var players = {};
+            //     var operations = {};
+            //     operations.addPlayer = function(player) {
+            //         var teamColor = player.teamColor;
+            //         players[teamColor] = players[teamColor] || [];
+            //         players[teamColor].push(player);
+            //     }
+            //     operations.removePlayer = function(player) {
+            //         var teamColor = player.teamColor;
+            //         var teamPlayers = players[teamColor] || [];
+            //         for (var i = teamPlayers.length - 1; i >= 0; i--) {
+            //             if (teamPlayers[i] === player) {
+            //                 teamPlayers.splice(i, 1);
+            //             }
+            //         }
+            //     }
+            //     operations.changeTeam = function(player, newTeamColor) {
+            //         operations.removePlayer(player);
+            //         player.teamColor = newTeamColor;
+            //         operations.addPlayer(player);
+            //     }
+            //     operations.playerDead = function(player) {
+            //         var teamColor = player.teamColor;
+            //         var teamPlayers = players[teamColor];
+            //         var all_dead = true;
+            //         for (var i = 0, player; player = teamPlayers[i++];) {
+            //             if (player.state !== 'dead') {
+            //                 all_dead = false;
+            //                 break;
+            //             }
+            //         }
+            //         if(all_dead) {
+            //             for (var i = 0, player; player = teamPlayers[i++];) {
+            //                 player.lose();
+            //             }
+            //             for (var color in players) {
+            //                 if (color !== teamColor) {
+            //                     var teamPlayers = players[color];
+            //                     for (var i = 0, player; player = teamPlayers[i++];) {
+            //                         player.win();
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+
+            //     var receiveMessage = function() {
+            //         var message = Array.prototype.shift.call(arguments);
+            //         operations[message].apply(this, arguments);
+            //     }
+            //     return {
+            //         receiveMessage: receiveMessage,
+            //     }
+            // })();
+
+            // var player1 = playerFactory('皮蛋', 'red');
+            // var player2 = playerFactory('小乖', 'red');
+            // var player3 = playerFactory('宝宝', 'red');
+            // var player4 = playerFactory('小强', 'red');
+
+            // var player5 = playerFactory('黑妞', 'blue');
+            // var player6 = playerFactory('葱头', 'blue');
+            // var player7 = playerFactory('胖墩', 'blue');
+            // var player8 = playerFactory('海盗', 'blue');
+
+            // player1.changeTeam('blue');
+            // player2.die();
+            // player3.die();
+            // player4.die();
+        
+        // 例：购买商品
+                var colorSelector = document.getElementById('colorSelector');
+                var memorySelector = document.getElementById('memorySelector');
+                var cpuSelector = document.getElementById('cpuSelector');                
+                var numberInout = document.getElementById('numberInout');
+                var colorInfo = document.getElementById('colorInfo');
+                var memoryInfo = document.getElementById('memoryInfo');
+                var numberInfo = document.getElementById('numberInfo');
+                var cpuInfo = document.getElementById('cpuInfo');                
+                var nextBtn = document.getElementById('nextBtn');
+
+                var mediator = (function() {
+                    var colorSelector = document.getElementById('colorSelector');
+                    var memorySelector = document.getElementById('memorySelector');
+                    var cpuSelector = document.getElementById('cpuSelector');
+                    var numberInout = document.getElementById('numberInout');
+                    var colorInfo = document.getElementById('colorInfo');
+                    var cpuInfo = document.getElementById('cpuInfo');
+                    var memoryInfo = document.getElementById('memoryInfo');
+                    var numberInfo = document.getElementById('numberInfo');
+                    var nextBtn = document.getElementById('nextBtn');
+
+                    return {
+                        changed: function(obj){
+                            var color = colorSelector.value;
+                            var memory = memorySelector.value;
+                            var number = numberInout.value;
+                            var cpu = cpuSelector.value;
+                            var stock = goods[color + '|' + memory + '|' + cpu] || 0;
+
+                            if (obj === colorSelector) {
+                                colorInfo.innerHTML = color;
+                            } else if (obj === memorySelector) {
+                                memoryInfo.innerHTML = memory;
+                            } else if (obj === cpuSelector) {
+                                cpuInfo.innerHTML = cpu;
+                            } else if (obj === numberInout) {
+                                numberInfo.innerHTML = number;
+                            } 
+
+                            if (!color) {
+                                nextBtn.disabled = true;
+                                nextBtn.innerHTML = '请选择手机颜色';
+                                return;
+                            }
+
+                            if (!memory) {
+                                nextBtn.disabled = true;
+                                nextBtn.innerHTML = '请选择手机内存';
+                                return;
+                            }
+
+                            if (!cpu) {
+                                nextBtn.disabled = true;
+                                nextBtn.innerHTML = '请选择手机CPU';
+                                return;
+                            }
+                            
+                            console.log(number - 0);
+
+                            if (((number - 0) | 0) !== number - 0) { //购买数是否为正整数
+                                nextBtn.disabled = true;
+                                nextBtn.innerHTML = '请输入正确的购买数量';
+                                return;
+                            }
+
+                            if (number > stock) {
+                                nextBtn.disabled = true;
+                                nextBtn.innerHTML = '库存不足';
+                                return;
+                            }
+
+                            nextBtn.disabled = false;
+                            nextBtn.innerHTML = '放入购物车';
+                        },
+                    };
+                })();
+
+                var goods = {
+                    'red|32G|800': 3,
+                    'red|64G|801': 0,
+                    'blue|32G|800': 1,
+                    'blue|64G|801': 6,
+                };
+
+                colorSelector.onchange = function() {
+                    mediator.changed(this);
+                }
+
+                memorySelector.onchange = function() {
+                    mediator.changed(this);
+                }
+
+                cpuSelector.onchange = function() {
+                    mediator.changed(this);
+                }
+
+                numberInout.oninput = function() {
+                    mediator.changed(this);
+                }
+    </script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        // 模块兼容写法
+        (function(name, defination) {
+            var hasDefine = typeof define === 'function';
+            var hasExports = typeof module !== 'undefined' && module.exports;
+            if (hasDefine) {
+                define(defination);
+            } else if (hasExports) {
+                module.exports = defination();
+            } else {
+                window[name] = defination();
+            }
+        })('hello', function() {
+            var hello = function() {};
+            return hello;
+        });    
+
+        
+
+        // 性能优化：
+        // 网页内容：
+        //     减少http请求：
+        //         1.捆绑文件（合并文件）
+        //         2.css sprites（雪碧图）
+        //         3.inline images（base64）
+        //     减少DNS查询次数：如果我们的网页内容来自不同的domain（比如嵌入了开放广告，引用了外部图片或脚本），那么客户端首次解析呃写domain
+        //         也消耗一定的时间。DNS查询结果缓存在本地系统和浏览器中一段时间，所以DNS查询一般是对首次访问响应速度有所影响。
+        //     缓存ajax：
+        //         1.添加expires或者cache-control报文头使回复可以被缓存。
+        //         2.配置Etag。
+        //         3.避免跳转。
+        //         4.压缩回复内容。
+        //     异步加载（异步加载与页面文档并行，但执行为串行）
+        //         defer： 与页面文档并行加载；在页面解析渲染之后，等到所有defer脚本加载完毕完按顺序执行。（可以操作dom）
+        //         async：与页面文档并行加载；但是执行脚本加载完即执行，执行没有顺序。（不可操作dom）
+        //     提前加载（预加载）
+        //     减少DOM元素数量
+        //     减少iframe数量：
+        //         iframe优点：
+        //             1.可以用来加载速度比较慢的的内容，比如广告。
+        //             2.脚本可以并行下载。
+        //         iframe缺点：
+        //             1.即使iframe内容为空也消耗加载时间。
+        //             2.会阻止页面加载。
+        // 服务器：
+        //     使用CDN（内容分发网络）提高下载速度
+        //         1.浏览器输入要访问的域名
+        //         2.浏览器向dns服务器请求对域名进行解析。由于cdn对域名解析进行了调整，dns服务器会最终将域名的解析权交给cname指向的cdn专用dns服务器。
+        //         3.cdn的dns服务器将cdn的负载均衡设备IP地址返回给用户。
+        //         4.用户向cdn负载均衡设备发起内容url访问请求。
+        //         5.cdn负载设备会为用户选择一台合适的缓存服务器提供服务。
+        //         6.用户想缓存服务器发出请求。
+        //         7.缓存服务器应用户请求，将用户所需要内容传送给用户。如果这台缓存服务器上没有用户想要的内容，而负载均衡设备依然将它分配给用户，那么这台服务器
+        //             就要向它上一级缓存服务器请求内容，直至追溯到网站的源服务器将内容拉到本地。
+        //     添加Expires或cache-control报文头：
+        //         1.对于静态内容添加expires，将静态内容设为永不过期，或者很长时间以后。
+        //         2.对于动态内容应用适合的cache-control，让浏览器根据条件来发送请求。
+        //     Gzip压缩传输文件：Gzip通常可以减少70%网页内容的大小，包括脚本、样式表、图片等文件。
+        //     配置Etag。
+        //     使用get ajax请求：
+        //         浏览器在实现XMLHttpRequest Post的时候分成两步，先发header，然后发送数据。而get却可以用一个TCP报文完成求情。
+        //         从语义上来说，get是请求获取数据，post是发送数据。所以我们使用ajax请求数据的时候尽量通过get来完成。
+        //     避免空的图片src：
+        //         空的图片src仍然会使浏览器发送请求到服务器，这样完全是浪费时间，而且浪费服务器的资源。尤其是你的网站每天呗很多人访问，
+        //         这种空请求造成的伤害不容忽视。
+        //         解决办法：
+        //             1.尽量避免使用空的img。
+        //             2.服务端，如果发现这种无意义的请求时不要返回任何东西给前端。
+        // cookie：
+        //     减少cookie大小：
+        //         1.去除没有必要的cookie。
+        //         2.将cookie的大小见到最小。
+        //         3.注意cookie设置的domain级别，没有必要情况下不要影响到sub-domain
+        //         4.设置合适的过期时间，比较长的过期时间可以提升响应速度。
+        //     页面内容使用无cookie域名：
+        //         浏览器对并发请求的数目限制是针对域名的，即针对同一域名（包括二级域名）在同一时间支持的并发请求数量。如果请求数目超出限制，则会阻塞。
+        //         因此，网站中对一些静态资源使用不同的一级域名（不可为二级域名，否则无济于事）可以提升浏览器对并行请求数目，加速界面资源的获取速度。
+        //         常见的划分domain方式是将静态文件放在static.example.com,动态文件放在www.example.com。
+
+        // CSS：
+        //     将样式表置顶：
+        //         样式表放在网页head中会让网页显得加载速度更快，因为这样做可以使浏览器逐步加载已经下载的网页内容。
+        //         如果将样式表放在底部，浏览器会拒绝渲染已经下载的网页，因为大多数浏览器在实现时都努力避免重绘，样式表
+        //         的内容是绘制网页的关键信息，没有下载下来之前之后对不起观众了。
+        //     避免css表达式：
+        //         css表达式可以动态的设置css属性，在IE5-IE8中支持，其他浏览器中表达式会被忽略。
+        //         例：background-color：expression((new Date()).getHours()%2 ?  "#b8d4ff" : "#f08a00")
+        //         css表达式的问题在于它呗重新计算的次数远比我们想象的多，不仅页面绘制或大小改变时计算，即使我们滚动屏幕或者移动鼠标
+        //         的时候也在计算，因此我们尽量避免使用它来防止使用不当而造成的性能损耗。
+        //     用link代替@import：
+        //         避免使用@import的原因很简单，因为它相当于将css放在网页底部。
+
+        // JS：
+        //     将脚本置低：
+        //         1.可以让页面渲染所需要的内容尽快加载现实的给用户。
+        //         2.defer可以指定脚本在文档加载后执行。
+        //         3.async可以让脚本异步执行。
+        //     使用外部js和css文件： 使用外部js和css文件可以使这些文件被浏览器缓存，从而在不同请求内容之间重用，同时也减少了网页内容大小。
+        //     精简js和css（去注释并压缩）
+        //     减少DOM访问：通过js访问DOM元素没有我们想象中快。
+        //         1.缓存已经访问过的元素
+        //         2.离线更新节点然后再加回到DOM Tree
+        // 图片：
+        //     网站图标文件favicon.ico,不管你服务器有还是没有，浏览器都回去尝试请求这个图标。所以我们要确保有这个图标。
+        //         1.存在
+        //         2.文件尽量小，最好小于1k
+        //         3.设置一个长的过期时间
+        // 移动客户端：
+        //     保持单个文件内容小于25k。这限制是因为iphone只能缓存小于25k，注意这是解压后的大小。
+
+
+        // 可用性：产品是否容易上手，用户能否完成任务，效率如何，以及这过程中的主观感受可好，是从用户的角度来看产品的质量。
+        //     好用性意味着产品质量高，是企业的核心竞争力。
+        // 可维护性：一般包含两个层面：
+        //     1.当系统出现问题时，快速定位并解决问题的成本,成本低则可维护性好。
+        //     2.代码是否容易被人理解，是否容易修改和增强功能。
+        // 可访问性：web内容对于残障用户的可阅读和可理解性。各种用户代理（桌面浏览器，语音浏览器，车载个人电脑，屏幕阅读器等）。js/css支持性不好的
+        //     用户代理，从渐进增强的角度讲，鼓励使用高级特性，只是同时做到优雅降级，让低端用户代理商，也能保留低保真的体验。
+        //     常用做法：
+        //         1.html语义化、结构化：html语义结构提供了网页的整体框架，提示他们在文件层级中所处的位置，还有他们可以如何与各种页面
+        //             元素进行交互，以及在合适的地方对文本内容进行强调，帮助用户获取大量的重要信息。
+        //         2.替代内容：文本可以作为页面内容的通用代替内容，如img标签的alt属性值，a标签的title属性值。
+        //         3.html定义基本交互：实现tab选项卡搜索功能。
+        //             只用表单来进行所有的搜索，而同时仍然能实现tab选项卡效果。通过ajax来插入页面内容，那禁用javascript的用户将无法使用。
+
+        // 获取search；
+        // function getArgs() {
+        //     if (!location.search) return {};
+        //     var search = location.search.split('&');
+        //     var result = {};
+        //     for (var i = 0; i < search.length; i++) {
+        //         var item = search[i].split('=');
+        //         var key = item[0];
+        //         var value = item[1];
+        //         result[key] = value;
+        //     }
+        //     return result;
+        // }
+
+        // // 去重
+
+        // function getNorepeatArr(arr) {
+        //     // var resultArr = [];
+        //     // for (var i = 0; i < arr.length; i++) {
+        //     //     if (resultArr.indexOf(arr[i]) === -1) {
+        //     //         resultArr.push(arr[i]);
+        //     //     }
+        //     // }
+        //     // return resultArr;
+        //     // return Array.from(new Set(arr));
+        //     return [...new Set(arr)];
+        // }
+
+        // console.log(getNorepeatArr([1,2,3,4,3,3,]));
+
+        // png图片转jpeg（canvas）
+        // var img = new Image();
+        // img.src = './cdn.png';
+        // img.setAttribute('crossOrigin', 'anonymous');
+
+        // img.addEventListener("load", function() {
+        //     var canvas = document.createElement('canvas');
+        //     canvas.height = img.height;
+        //     canvas.width = img.width;
+        //     var context = canvas.getContext('2d');
+        //     context.fillStyle = '#fff';
+        //     context.fillRect(0, 0, canvas.width, canvas.height);
+        //     context.drawImage(img, 0, 0);
+        //     getBase64(canvas, function(dataUrl) {
+        //         console.log(dataUrl);
+        //         var image = new Image();
+        //         image.src = dataUrl;
+        //         document.body.appendChild(image);
+        //     })
+        // }, false);
+
+        
+        // function getBase64(canvas, callback) {
+        //     console.log(canvas);
+        //     var dataUrl = canvas.toDataURL('image/jpeg');
+        //     if (typeof callback != undefined) {
+        //         callback(dataUrl);
+        //     }
+        // } 
+
+
+        // new fun()机制
+
+        // 1. 先创建一个空对象var obj = {}；
+        // 2. obj.constractor = fun;obj.__proto__ = fun.prototype;
+        // 3. fun.apply(obj, arguments);
+        // 4. 如果构造函数返回原始数据类型或者不返回，那么返回新实例对象，如果构造函数返回引用类型则返回该对象
+        
+        // 优先级顺序：() > 属性访问. > new Fun() > Fun()
+         
+        function getName() {
+            console.log(1);
+        }
+        function Foo() {
+            this.getName = function() {
+                console.log(2);
+            }
+            return this;
+        }
+        Foo.getName = function() {
+            console.log(3);
+        }
+
+        var a = new Foo.getName(); // 3
+        var b = new Foo().getName(); // 2
+        var c = new new Foo().getName(); // 2
+        console.log(new Date().getTime());
+        console.log((new Date).getTime());
+    </script>
+</body>
+</html>

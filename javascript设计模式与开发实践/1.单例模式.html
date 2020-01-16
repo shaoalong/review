@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>单例模式</title>
+</head>
+<body>
+    <div id="loginBtn">登录</div>
+    <div id="alert">弹出</div>
+    <script>
+        // 单例模式：保证一个类仅有一个实例，并提供一个访问他的全局访问点。
+        // 生成唯一一个的div
+        // var createDiv = function(html) {
+        //     this.html = html;
+        //     this.init();
+        // };
+        // createDiv.prototype.init = function(){
+        //     var div = document.createElement('div');
+        //     div.innerHTML = this.html;
+        //     document.body.appendChild(div);
+        // };
+        // var proxySingletonCreateDiv = (function(){
+        //     var instance;
+        //     return function(html) {
+        //         if (!instance) {
+        //             instance = new createDiv(html);
+        //         }
+        //         return instance;
+        //     }
+        // })();
+        // var a = new proxySingletonCreateDiv('proxySingletonCreateDiv1');
+        // var b = new proxySingletonCreateDiv('proxySingletonCreateDiv2');
+        // var c = new createDiv('createDiv1');
+        // var d = new createDiv('createDiv2');
+        // console.log(a);
+        // console.log(a === b);
+        // 通用的惰性案例
+        var getSingle = function(fn){
+            var result;
+            return function(){
+                return result || (result = fn.apply(this, arguments));
+            };
+        };
+            // 1.生成唯一一个登录浮框
+            var createLoginLayer = function(){
+                var div = document.createElement('div');
+                div.innerHTML = '我是登录浮框';
+                div.style.display = 'none';
+                document.body.appendChild(div);
+                return div;
+            }
+            var createSingleLoginLayer = getSingle(createLoginLayer);
+            document.getElementById('loginBtn').onclick = function(){
+                var loginLayer = createSingleLoginLayer();
+                loginLayer.style.display = 'block';
+            };
+
+            // 绑定点击事件一次
+            var bindEvent = getSingle(function(){
+                document.getElementById('alert').onclick = function(){
+                    alert('click');
+                };
+                return true;
+            });
+            var render = function() {
+                console.log('开始渲染');
+                bindEvent();
+            };
+            render();
+            render();
+            render();
+    </script>
+</body>
+</html>

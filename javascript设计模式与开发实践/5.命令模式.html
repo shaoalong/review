@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>命令模式</title>
+</head>
+<body>
+    <div style="position: absolute;background: blue;border-radius: 10px;height: 20px;width: 20px; top: 60px;left: 0" id="div"></div>
+    <input type="text" id='pos'>
+    <button id="moveBtn">开始移动</button>
+    <button id="cancel">撤回</button>
+    <button id="replay">播放录像</button>
+    <script>
+        // 命令模式：最简单和优雅的模式之一，命令模式中的命令（command）指的是一个执行某些特定事情的指令
+        // 应用场景：有时候需要向某些对象发送请求，但并不知道请求的接受者是谁，也不知道被请求的操作是什么。
+            // 此时希望用一种松耦合的方式来设计程序，使得请求发送者和请求者能够消除彼此之间的耦合关系。
+        // 增加撤销操作（撤回一个命令）
+            var tween = {
+                linear: function(t, b, c, d){
+                    return c * t / d + b;
+                },
+                easeIn: function(t, b, c, d){
+                    return c * (t /= d) * t + b;
+                },
+                strongEaseOut: function(t, b, c, d){
+                    return c * ((t = t / d - 1) * t * t * t * t + 1) + b;
+                },
+                strongEaseIn: function(t, b, c, d){
+                    return c * (t /= d) * t * t * t * t + b;
+                },
+            };
+            var Animation = function(dom){
+                this.dom = dom;
+                this.startTime = 0;
+                this.startPos = 0;
+                this.endPos = 0;
+                this.propertyName = null;
+                this.easing = null;
+                this.duration = null;
+            };
+            Animation.prototype.start = function(propertyName, endPos, duration, easing){
+                this.startTime = +new Date();
+                this.startPos = this.dom.getBoundingClientRect()[propertyName];
+                console.log(this.dom.getBoundingClientRect());
+                this.propertyName = propertyName;
+                this.endPos = endPos;
+                this.duration = duration;
+                this.easing = tween[easing];
+
+                var self = this;
+                var timerId = setInterval(function(){
+                    if (self.step() === false) {
+                        clearInterval(timerId);
+                    }
+                }, 19);
+            };
+            Animation.prototype.step = function(){
+                var t = +new Date();
+                if (t >= this.startTime + this.duration) {
+                    this.update(this.endPos);
+                    return false;
+                }
+                var pos = this.easing(t - this.startTime, this.startPos, this.endPos - this.startPos, this.duration);
+                this.update(pos);
+            };
+            Animation.prototype.update = function(pos){
+                this.dom.style[this.propertyName] = pos + 'px';
+            };
+
+
+            
+            var div = document.getElementById('div');
+            var pos = document.getElementById('pos');
+            var moveBtn = document.getElementById('moveBtn');
+            var cancelBtn = document.getElementById('cancel');
+            
+
+            var MoveCommand = function (receiver, pos) {
+                this.receiver = receiver;
+                this.pos = pos;
+                this.oldPos = null;
+            };
+            MoveCommand.prototype.execute = function() {
+                this.receiver.start('left', pos.value, 1000, 'easeIn');
+                this.oldPos = this.receiver.dom.getBoundingClientRect()[this.receiver.propertyName];
+            };
+            MoveCommand.prototype.undo = function() {
+                this.receiver.start('left', this.oldPos, 1000, 'easeIn');
+            };
+            
+            var moveCommand;
+            moveBtn.onclick = function() {
+                var animation = new Animation(div);
+                moveCommand = new MoveCommand(animation, pos.value);
+                moveCommand.execute();
+            };
+            cancelBtn.onclick = function() {
+                moveCommand.undo();
+            };
+
+        // 撤消和重做（撤销一系列命令）
+        // var Ryu = {
+        //     attack: function() {
+        //         console.log('攻击');
+        //     },
+        //     defense: function() {
+        //         console.log('防御');
+        //     },
+        //     jump: function() {
+        //         console.log('跳跃');
+        //     },
+        //     crouch: function() {
+        //         console.log('蹲下');
+        //     },
+        // };
+
+        // var commands = {
+        //     '119': 'jump',
+        //     '115': 'crouch',
+        //     '97': 'defense',
+        //     '100': 'attack',
+        // };
+
+        // var makeCommand = function (receiver, state) {
+        //     return function() {
+        //         receiver[state]();
+        //     };
+        // };
+
+        // var commandStack = [];
+        // document.onkeypress = function(ev) {
+        //     var keyCode = ev.keyCode;
+        //     if (!(keyCode in commands)) {
+        //         return false;
+        //     }
+        //     var command = makeCommand(Ryu, commands[keyCode]);
+        //     if (command) {
+        //         command();
+        //         commandStack.push(command);
+        //     }
+        // };
+        // document.getElementById('replay').onclick = function() {
+        //     console.log('replay');
+        //     var command;
+        //     while (command = commandStack.shift()) {
+        //         command();
+        //     }
+        // };
+
+        // 宏命令
+        var closeDoorCommand = {
+            execute: function() {
+                console.log('关门');
+            },
+        };
+        var openPcCommand = {
+            execute: function() {
+                setTimeout(function() {
+                    console.log('开电脑');
+                },1000);
+            },
+        };
+        var openQQCommand = {
+            execute: function() {
+                console.log('开启QQ');
+            },
+        };
+        var MacroCommand = function (){
+            return {
+                commandStack: [],
+                add: function(command) {
+                    this.commandStack.push(command);
+                },
+                execute: function() {
+                    for (var i = 0, command; command = this.commandStack[i++];) {
+                        command.execute();
+                    }
+                },
+            };
+        };
+        var macroCommand = MacroCommand();
+        macroCommand.add(closeDoorCommand);
+        macroCommand.add(openPcCommand);
+        macroCommand.add(openQQCommand);
+        macroCommand.execute();
+    </script>
+</body>
+</html>

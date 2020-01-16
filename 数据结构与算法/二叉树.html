@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>二叉树</title>
+</head>
+
+<body>
+    <h1>树是一种非线性的数据结构，以分层的方式储存数据。树被用来储存具有层级关系的数据，比如文件系统中的文件；树还被用来储存有序列表。</h1>
+    <h1>二叉树：最多只有两个个树。在二叉树上进项查找非常快（而在链表上查找则不是这样），为二叉树添加或者删除元素也非常快（而对数组执行添加或者删除操作则不是这样）</h1>
+    <h1>二叉查找树：一种特殊的二叉树，相对较小的值保存在做节点，较大的保存在右节点。</h1>
+    <h1>遍历二叉树：中序：按照节点的键值升序访问（左根右）；先序：先访问根节点，然后在以同样的方式访问左子树和右子树（根左右）；后序：先访问叶子节点，从左子树到右子树，再到根节点（左右根）</h1>
+
+    <script>
+        class Node {
+            constructor(data, left, right) {
+                this.data = data;
+                this.left = left;
+                this.right = right;
+            }
+            show() {
+                return this.data;
+            }
+        }
+
+        class BST {
+            constructor() {
+                this.root = null;
+            }
+
+            insert(data) {
+                const n = new Node(data, null, null);
+                if (this.root === null) {
+                    this.root = n;
+                } else {
+                    let currentNode = this.root;
+                    let parentNode;
+                    while (true) {
+                        parentNode = currentNode;
+                        if (data > currentNode.data) {
+                            currentNode = currentNode.right;
+                            if (currentNode === null) {
+                                parentNode.right = n;
+                                break;
+                            }
+                        } else {
+                            currentNode = currentNode.left;
+                            if (currentNode === null) {
+                                parentNode.left = n;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            inOrder(node) {
+                if (node != null) {
+                    this.inOrder(node.left);
+                    console.log(node.show() + ' ');
+                    this.inOrder(node.right);
+                }
+            }
+
+            preOrder(node) {
+                if (node != null) {
+                    console.log(node.show() + ' ');
+                    this.preOrder(node.left);
+                    this.preOrder(node.right);
+                }
+            }
+
+            postOrder(node) {
+                if (node != null) {
+                    this.postOrder(node.left);
+                    this.postOrder(node.right);
+                    console.log(node.show() + ' ');
+                }
+            }
+
+            find(ele) {
+                let currentNode = this.root;
+                while (currentNode != null) {
+                    if (ele === currentNode.data) {
+                        return currentNode;
+                    } else if (ele > currentNode.data) {
+                        currentNode = currentNode.right;
+                    } else {
+                        currentNode = currentNode.left;
+                    }
+                }
+                return null;
+            }
+
+            getMin() {
+                let currentNode = this.root;
+                while(currentNode.left != null) {
+                    currentNode = currentNode.left; 
+                }
+                return currentNode;
+            }
+
+            getMax() {
+                let currentNode = this.root;
+                while(currentNode.right != null) {
+                    currentNode = currentNode.right; 
+                }
+                return currentNode;
+            }
+
+            remove(data) {
+                const getSmallest = (node) => {
+                    var current = node
+                    while(current.left !== null) {
+                        current = current.left
+                    }
+                    return current
+                }
+                const removeNode = (node, data) => {
+                    if (node.data === data) {
+                        if (node.left === null && node.right === null) {
+                            return null;
+                        }
+                        if (node.left === null) {
+                            return node.right;
+                        }
+                        if (node.right === null) {
+                            return node.left;
+                        }
+                        const tempNode = getSmallest(node.right);
+                        node.data = tempNode.data;
+                        node.right = removeNode(node.right, tempNode.data);
+                        return node;
+                    } else if (data > node.data) {
+                        node.right = removeNode(node.right, data);
+                        return node;
+                    } else {
+                        node.left = removeNode(node.left, data);
+                        return node;
+                    }
+                }
+                removeNode(this.root, data);
+            }
+        }
+
+        var nums = new BST();
+        nums.insert(23);
+        nums.insert(45);
+        nums.insert(16);
+        nums.insert(37);
+        nums.insert(3);
+        nums.insert(99);
+        nums.insert(22);
+        console.log(nums)
+        console.log("Inorder traversal: ");
+        nums.inOrder(nums.root);
+        console.log("PreOrder traversal: ");
+        nums.preOrder(nums.root);
+        console.log("PostOrder traversal: ");
+        nums.postOrder(nums.root);
+        nums.remove(23)
+        console.log('remove 23: ')
+        nums.postOrder(nums.root);
+    </script>
+</body>
+
+</html>

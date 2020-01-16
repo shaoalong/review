@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>动态规划</title>
+</head>
+<body>
+    <script>
+        // 背包问题
+        var value = [4, 5, 10, 11, 13];
+        var size = [3, 4, 7, 8, 9];
+        var capacity = 16;
+        var n = 5;
+        console.log(dKnapsack(capacity, size, value, n));
+
+        function dKnapsack(capacity, sizeArr, valueArr, n) {
+            var dp = [];
+            for (var i = 0; i <= n; i++) {
+                dp[i] = [];
+            }
+            for (var i = 0; i <= n; i++) {
+                for(var s = 0; s <= capacity; s++) {
+                    if (i ===0 || s === 0) {
+                        dp[i][s] = 0;
+                    } else if (s >= sizeArr[i - 1]) {
+                        dp[i][s] = Math.max(dp[i-1][s-sizeArr[i-1]] + valueArr[i - 1], dp[i-1][s])
+                    } else {
+                        dp[i][s] = dp[i-1][s];
+                    }
+                }
+            }
+            return dp;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style type="text/css" media="screen">
+        body {
+            font: 100% georgia, times, serif;
+        }
+
+        h1,
+        h2 {
+            font-weight: normal;
+        }
+
+        #queue-items {
+            height: 1.5em;
+        }
+
+        #add-stuff {
+            padding: .5em;
+            background: #ddd;
+            border: 1px solid #bbb;
+        }
+
+        #results-area {
+            padding: .5em;
+            border: 1px solid #bbb;
+        }
+    </style>
+    <title>xhr队列</title>
+</head>
+
+<body>
+    <div id="doc">
+        <h1>
+            异步联接请求</h1>
+        <div id="queue-items">
+        </div>
+        <div id="add-stuff">
+            <h2>向队列里添加新请求</h2>
+            <ul id="adders">
+                <li><a href="#" id="action-01">添加 "01" 到队列</a></li>
+                <li><a href="#" id="action-02">添加 "02" 到队列</a></li>
+                <li><a href="#" id="action-03">添加 "03" 到队列</a></li>
+            </ul>
+        </div>
+        <h2>队列控制</h2>
+        <ul id='items'>
+            <li><a href="#" id="flush">Flush</a></li>
+            <li><a href="#" id="dequeue">出列Dequeue</a></li>
+            <li><a href="#" id="pause">暂停Pause</a></li>
+            <li><a href="#" id="clear">清空Clear</a></li>
+        </ul>
+        <div id="results-area">
+            <h2>
+                结果:
+            </h2>
+            <div id="results">
+            </div>
+        </div>
+    </div>
+    <script>
+        // 异步请求
+        var asyncRequest = (function () {
+            var getXHR = function () {
+                var http;
+                try {
+                    http = new XMLHttpRequest();
+                    getXHR = function () {
+                        return new XMLHttpRequest();
+                    }
+                } catch (e) {
+                    var msxml = ['MSXML2.XMLHTTP.3.0', 'MSXML2.XMLHTTP', 'Microsoft.XMLHTTP'];
+                    for (var i = 0, len = msxml.length; i < len; i++) {
+                        try {
+                            http = new ActiveXObject(msxml[i]);
+                            getXHR = function () {
+                                return new ActiveXObject(msxml[i]);
+                            };
+                            break;
+                        } catch (e) {
+
+                        }
+                    }
+                }
+                return http;
+            }
+
+            var handleReadyState = function (http, callback) {
+                var poll = window.setInterval(function () {
+                    if (http && http.readyState === 4) {
+                        window.clearInterval(poll);
+                        if (callback) {
+                            callback(http)
+                        }
+                    }
+                }, 50)
+            }
+            return function (method, uri, callback, postData) {
+                var http = getXHR();
+                http.open(method, uri, true);
+                handleReadyState(http, callback);
+                http.send(postData || null);
+                return http;
+            }
+        })();
+
+        Function.prototype.method = function (name, fn) {
+            this.prototype[name] = fn;
+            return this;
+        }
+
+        if (!Array.prototype.forEach) {
+            Array.method('forEach', function (fn, thisObj) {
+                var scope = thisObj || window;
+                for (var i = 0, len = this.length; i < len; i++) {
+                    fn.call(scope, this[i], i, this)
+                }
+            })
+        }
+
+        if (!Array.prototype.filter) {
+            Array.method('filter', function (fn, thisObj) {
+                var scope = thisObj || window;
+                var arr = [];
+                for (var i = 0, len = this.length; i < len; i++) {
+                    if (fn.call(scope, this[i], i, this)) {
+                        arr.push(this[i]);
+                    }
+                }
+                return arr;
+            })
+        }
+
+        var addEvent = function (element, type, callback) {
+            try {
+                addEvent = function (element, type, callback) {
+                    element.addEventListener(type, callback);
+                }
+            } catch (e) {
+                addEvent = function (element, type, callback) {
+                    element.attachEvent('on' + type, callback);
+                }
+            }
+            addEvent(element, type, callback)
+        }
+
+        // 观察者系统
+        window.DED = window.DED || {};
+        DED.util = DED.util || {};
+        DED.util.Observer = function () {
+            this.fns = [];
+        }
+        DED.util.Observer.prototype = {
+            subscribe: function (fn) {
+                this.fns.push(fn);
+            },
+            unsubscribe: function (fn) {
+                this.fn = this.fns.filter(function (value, index) {
+                    return value !== fn
+                })
+            },
+            fire: function (o) {
+                this.fns.forEach(function (el) {
+                    el(o);
+                })
+            }
+        }
+
+        // 队列
+        DED.Queue = function () {
+            this.queue = [];
+            this.onComplete = new DED.util.Observer();
+            this.onFailure = new DED.util.Observer();
+            this.onFlush = new DED.util.Observer();
+
+            this.retryCount = 3;
+            this.currentRetry = 0;
+            this.paused = false;
+            this.timeoute = 5000;
+            this.conn = {};
+            this.timer = {};
+        }
+        DED.Queue.method('flush', function () {
+            if (!this.queue.length > 0) {
+                return;
+            }
+            if (this.paused) {
+                this.paused = false;
+                return;
+            }
+            var that = this;
+            this.currentRetry++;
+            var abort = function () {
+                that.conn.abort();
+                if (that.currentRetry === that.retryCount) {
+                    that.onFailure.fire();
+                    this.currentRetry = 0;
+                } else {
+                    that.flush();
+                }
+            }
+
+            this.timer = window.setTimeout(abort, this.timeoute);
+            var callback = function (o) {
+                window.clearTimeout(that.timer);
+                that.currentRetry = 0;
+                var data = that.queue[0].params;
+                that.queue.shift();
+                that.onFlush.fire(o.responseText, data);
+                if (that.queue.length === 0) {
+                    that.onComplete.fire();
+                }
+                that.flush();
+            }
+            this.conn = asyncRequest(this.queue[0].method, this.queue[0].uri, callback, this.queue[0].params);
+        }).
+        method('setRetryCount', function (count) {
+            this.retryCount = count;
+        }).
+        method('setTimeout', function (time) {
+            this.timeout = time;
+        }).
+        method('add', function (o) {
+            this.queue.push(o);
+        }).
+        method('pause', function () {
+            this.paused = true;
+        }).
+        method('dequeue', function () {
+            this.queue.pop();
+        }).
+        method('clear', function () {
+            this.queue = [];
+        });
+
+        var getElementById = function(id) {
+            return document.getElementById(id)
+        }
+
+
+        addEvent(window, 'load', function() {
+            var q = new DED.Queue();
+            q.setRetryCount(5);
+            q.setTimeout(3000);
+            var items = getElementById('items');
+            var results = getElementById('results');
+            var queue = getElementById('queue-items');
+
+            var requests = [];
+            q.onFlush.subscribe(function (data) {
+                results.innerHTML = data;
+                requests.shift();
+                queue.innerHTML = requests.toString();
+            })
+            q.onFailure.subscribe(function () {
+                results.innerHTML += ' <span style="color:red;">Connection Error!</span>';
+            });
+            q.onComplete.subscribe(function () {
+                results.innerHTML += ' <span style="color:green;">Completed!</span>';
+            });
+            var actionDispatcher = function (element) {
+                switch (element) {
+                    case 'flush':
+                        q.flush();
+                        break;
+                    case 'dequeue':
+                        q.dequeue();
+                        requests.pop();
+                        queue.innerHTML = requests.toString();
+                        break;
+                    case 'pause':
+                        q.pause();
+                        break;
+                    case 'clear':
+                        q.clear();
+                        requests = [];
+                        queue.innerHTML = '';
+                        break;
+                }
+            };
+            var addRequest = function (request) {
+                var data = request.split('-')[1];
+                q.add({
+                    method: 'GET',
+                    uri: 'bridge-connection-queue.php?ajax=true&s=' + data,
+                    params: null
+                });
+                requests.push(data);
+                queue.innerHTML = requests.toString();
+            };
+            addEvent(items, 'click', function (e) {
+                var e = e || window.event;
+                var src = e.target || e.srcElement;
+                try {
+                    e.preventDefault();
+                }
+                catch (ex) {
+                    e.returnValue = false;
+                }
+                actionDispatcher(src.id);
+            });
+            var adders = getElementById('adders');
+            console.log(adders)
+            addEvent(adders, 'click', function (e) {
+                var e = e || window.event;
+                var src = e.target || e.srcElement;
+                try {
+                    e.preventDefault();
+                }
+                catch (ex) {
+                    e.returnValue = false;
+                }
+                addRequest(src.id);
+            });
+        })
+    </script>
+</body>
+
+</html>

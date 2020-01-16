@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        全选
+        <input type="checkbox" id="all_in_out">
+        反选
+        <input type="button" id="reverse">
+        <br/>
+        <input type="checkbox" name="checkbox">
+        <input type="checkbox" name="checkbox">
+        <input type="checkbox" name="checkbox">
+        <input type="checkbox" name="checkbox">
+        <input type="checkbox" name="checkbox">
+        <input type="checkbox" name="checkbox">
+        <input type="checkbox" name="checkbox">
+        <input type="checkbox" name="checkbox">
+        <input type="checkbox" name="checkbox">
+        <input type="checkbox" name="checkbox">
+        <input type="checkbox" name="checkbox">
+    </div>
+    <script>
+        var addEventer = function(type, ele, callback) {
+            if (typeof addEventListener === undefined) {
+                addEventer = function(type, ele, callback) {
+                    ele.attachEvent('on'+type, callback)
+                }
+            } else {
+                addEventer = function(type, ele, callback) {
+                    ele.addEventListener(type, callback)
+                }
+            }
+            addEventer(type, ele, callback)
+        }
+        var all_in_out = document.getElementById('all_in_out');
+        var reverse = document.getElementById('reverse');
+        var checkbox = document.getElementsByName('checkbox');
+        
+
+        addEventer('change', all_in_out, function(e) {
+            if (e.target.checked) {
+                for (var i = 0; i < checkbox.length; i++) {
+                    checkbox[i].checked = true
+                }
+            } else {
+                for (var i = 0; i < checkbox.length; i++) {
+                    checkbox[i].checked = false
+                }
+            }
+        })
+
+        addEventer('click', reverse, function() {
+            var CheckedNum = 0;
+            for (var i = 0; i < checkbox.length; i++) {
+                checkbox[i].checked = !checkbox[i].checked;
+                if (!checkbox[i].checked) {
+                    all_in_out.checked = false
+                } else {
+                    CheckedNum++;
+                }
+            }
+            if (CheckedNum === checkbox.length) {
+                all_in_out.checked = true
+            }
+        })
+        
+        for (var i = 0; i < checkbox.length; i++) {
+            addEventer('change', checkbox[i], function(e) {
+                if (e.target.checked && [].slice.call(checkbox).every(function(y){ return y.checked})) {
+                    all_in_out.checked = true
+                } else {
+                    all_in_out.checked = false
+                }
+            })
+        }
+    </script>
+</body>
+</html>
