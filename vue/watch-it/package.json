@@ -1,0 +1,15 @@
+{
+  "name": "watch-it",
+  "version": "1.0.0",
+  "description": "",
+  "main": "defineComputed.js",
+  "scripts": {
+    "build": "node build"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "rollup": "^2.23.0",
+    "rollup-plugin-commonjs": "^10.1.0"
+  }
+}
