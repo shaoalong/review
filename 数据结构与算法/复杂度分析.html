@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h2>复杂度分析：描述代码的执行效时间(或占用空间)与数据规模的增长关系。</h2>
+    <h2>为什么需要复杂度分析：</h2>
+    <ol>
+        <li>和性能测试相比，复杂度不依赖于执行环境、成本低、效率高、易操作、指导性强的特点。</li>
+        <li>掌握复杂度分析，将能编写出性能更优的代码，有利于降低系统开发和维护成本。</li>
+    </ol>
+    <h2>复杂度分析法则：</h2>
+    <ol>
+        <li>单段代码看高频：比如循环</li>
+        <li>多段代码取最大：比如一段代码中有单循环和多重循环，那么取多重循环的复杂度</li>
+        <li>嵌套代码求乘积：比如递归、多重循环等</li>
+        <li>多个规模求加法：比如方法有两个参数控制两个循环，那么这是取二者复杂度相加</li>
+    </ol>
+    <h2>复杂度的4个概念：</h2>
+    <ol>
+        <li>最好时间复杂度：代码在最理想情况下执行的时间复杂度</li>
+        <li>最坏时间复杂度：代码在最不理想情况下执行的时间复杂度</li>
+        <li>平均时间复杂度：用代码在所有情况下执行的次数的加权平均值表示。所以又称加权平均时间复杂度或者期望时间复杂度</li>
+        <li>均摊时间复杂度：在代码执行的所有复杂度情况中绝大部分是低级别的复杂度，个别情况是高级别复杂度且发生具有时序关系时，可以将个别高级别复杂度均摊到低级别复杂度上。基本上均摊结果就等于低级别复杂度。</li>
+    </ol>
+    <h2>为什么要引入这四个概念：</h2>
+    <ol>
+        <li>同一段代码在不同情况下时间复杂度会出现量级差别，为了更全面，更准确的描述代码的时间复杂度，所以引入这4个概念</li>
+        <li>代码复杂度在不同情况下出现量级差别才需要区别这4中复杂度。大多数情况是不需要分析他们的</li>
+    </ol>
+
+    <script>
+        function partition(A, p, r) {
+            var pivot = A[r];
+            var i = p;
+            for (var j = p; j <= r-1; j++) {
+                if (A[j] < pivot) {
+                    swap(A, i, j);
+                    i++;
+                }
+            }
+            swap(A, i, r)
+            return i;
+        }
+
+        function swap(arr, i, j) {
+            var temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+
+        function quickSort(A, p, r) {
+            if (p >= r) {
+                return;
+            }
+            var q = partition(A, p, r);
+            console.log(q)
+            quickSort(A, p, q-1);
+            quickSort(A, q+1, r);
+        }
+        var array = [4,7,2,1,88,3]
+        quickSort(array, 0, array.length-1)
+        console.log(array)
+    </script>
+</body>
+</html>

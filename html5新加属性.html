@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>HTML5 新加属性</title>
+    <style>
+        .textarea {
+            height: 200px;
+            width: 300px;
+            padding: 4px;
+            border: 1px solid #888;
+            resize: vertical;
+            overflow: auto;
+        }
+
+        .textarea:empty:before {
+            content: attr(placeholder);
+            color: #bbb;
+        }
+
+
+        ol {
+            margin: 0;
+            padding: 0 0 0 2em;
+            list-style: none;
+            counter-reset: item;
+        }
+        li:before {
+            counter-increment: item;
+            content: counters(item, ".");
+            /* content: counter(item)"."; */
+            color: #f00;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="textarea" contenteditable="true" placeholder="This is placeholder"></div>
+    <p hidden>hidden 属性</p>
+    <ol class="test">
+        <li>Node
+            <ol>
+                <li>Node
+                    <ol>
+                        <li>Node</li>
+                        <li>Node</li>
+                        <li>Node</li>
+                    </ol>
+                </li>
+                <li>Node</li>
+            </ol>
+        </li>
+        <li>Node</li>
+        <li>Node</li>
+    </ol>
+</body>
+<script>
+    // draggable: 属性是布尔属性,规定元素是否可拖动。除了IE8 以及更早的版本，所有主流浏览器都支持 data-* 属性。
+    // data-*: 自定义属性,用于存储页面或应用程序的私有定制数据。所有主流浏览器都支持 data-* 属性。
+    // contenteditable：属性是布尔属性，规定元素内容是否可编辑，如果元素未设置 contenteditable 属性，那么元素会从其父元素继承该属性。所有主流浏览器都支持 contenteditable 属性。
+    // hidden： 属性是布尔属性， 浏览器不应显示已规定 hidden 属性的元素。 所有主流浏览器都支持 hidden 属性，除了 Internet Explorer。
+
+
+    // attr(): 插入元素的属性值。
+    // counter(): 插入计数器。
+    // counters(): 重复使用了counter()。
+</script>
+</html>

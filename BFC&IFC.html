@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>BFC&IFC</title>
+    <style>
+        .wrap {
+            border: 2px solid yellow;
+            width: 250px;
+            overflow: hidden;
+        }
+        .wrap section {
+            background-color: pink;
+            float: left;
+            width: 100px;
+            height: 100px;
+        }
+
+        .ifc {
+            width: 200px;
+            display: inline;
+        }
+
+        .bfc {
+            overflow: hidden;
+        }
+        .bfc div {
+            margin: 10px;
+        }
+
+        .columnLayout {
+            width: 200px;
+        }
+        .columnLayout aside {
+            background-color: yellow;
+            float: left;
+            width: 50px;
+            height: 50px;
+        }
+        .columnLayout main {
+            background-color: pink;
+            overflow: hidden;
+        }
+        
+        .marginEcl section {
+            background-color: pink;
+            margin-bottom: 100px;
+            width: 100px;
+            height: 100px;
+        }
+        .marginEcl .bottom {
+            margin-top: 100px;
+        }
+        .marginEcl .wrapbottom {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="ifc">
+        <span>1</span>
+        <span style="padding: 100px;"></span>
+        <span>3</span>
+        <span>4</span>
+        <span>5</span>
+        <span>6</span>
+        <span>7</span>
+    </div>
+    <div class="bfc">
+        <div>1</div>
+        <div>2</div>
+        <div style="float: left;">3</div>
+        <div style="float: left;">4</div>
+    </div>
+    <br/>
+
+        
+    <!-- 清除浮动:为 .wrap 加上 overflow: hidden;使其形成BFC，根据BFC规则第六条，计算高度时就会计算float的元素的高度，达到清除浮动影响的效果。 -->
+    <div class="wrap">
+        <section>1</section>
+        <section>2</section>
+    </div>
+    <br/>
+
+    <!-- 自适应两栏布局：为main设置 overflow: hidden; 触发main元素的BFC，根据规则第4、5条，BFC的区域是独立的，不会与页面其他元素相互影响，且不会与float元素重叠，因此就可以形成两列自适应布局 -->
+    <div class="columnLayout">
+        <aside></aside>
+        <main>我是好多好多文字会换行的那种蛤蛤蛤蛤蛤蛤蛤蛤蛤蛤蛤蛤蛤</main>
+    </div>
+
+    <!-- 防止垂直margin合并: 为其中一个元素的外面包裹一层元素。并为这个外层元素设置 overflow: hidden;，使其形成BFC。因为BFC内部是一个独立的容器，所以不会与外部相互影响，可以防止margin合并。 -->
+    <div class="marginEcl">
+        <section class="top">1</section>
+        <!-- <section class="bottom">2</section> -->
+        <div class="wrapbottom">
+            <section class="bottom">2</section>
+        </div>
+    </div>
+</body>
+<script>
+    // Box：一个页面是由很多个 Box 组成的，元素的类型和 display 属性决定了这个 Box 的类型。不同类型的 Box，会参与不同的 Formatting Context。
+        // Block level的box会参与形成BFC，比如display值为block，list-item，table的元素。
+        // Inline level的box会参与形成IFC，比如display值为inline，inline-table，inline-block的元素
+    // FC: 它是W3C CSS2.1规范中的一个概念，定义的是页面中的一块渲染区域，并且有一套渲染规则，它决定了其子元素将如何定位，以及和其他元素的关系和相互作用。
+        // 常见的Formatting Context 有：Block Formatting Context（BFC | 块级格式化上下文） 和 Inline Formatting Context（IFC |行内格式化上下文）。
+
+    // BFC布局规则：
+    //     1. 内部的Box会在垂直方向，一个接一个地放置。
+    //     2. Box垂直方向的距离由margin决定。属于同一个BFC的两个相邻Box的margin会发生重叠
+    //     3. 每个元素的左外边缘（margin-left)， 与包含块的左边（contain box left）相接触(对于从左往右的格式化，否则相反)。即使存在浮动也是如此。除非这个元素自己形成了一个新的BFC。
+    //     4. BFC的区域不会与float box重叠。
+    //     5. BFC就是页面上的一个隔离的独立容器，容器里面的子元素不会影响到外面的元素。反之也如此。
+    //     7. 计算BFC的高度时，浮动元素也参与计算
+    
+    // IFC布局规则：
+    //     在行内格式化上下文中，框(boxes)一个接一个地水平排列，起点是包含块的顶部。水平方向上的 margin，border 和 padding在框之间得到保留。
+    //     框在垂直方向上可以以不同的方式对齐：它们的顶部或底部对齐，或根据其中文字的基线对齐。包含那些框的长方形区域，会形成一行，叫做行框。
+
+    // 如何形成一个BFC：
+    //     1. 根元素或其它包含它的元素
+    //     2. 浮动 (元素的 float 不是 none)
+    //     3. 绝对定位的元素 (元素具有 position 为 absolute 或 fixed)
+    //     4. 非块级元素具有 display: inline-block，table-cell, table-caption, flex, inline-flex (inline-block的元素的内部是一个BFC，但是它本身可以和其它inline元素一起形成IFC)
+    //     5. 块级元素具有overflow ，且值不是 visible
+
+    // BFC用处：
+        // 1. 清除浮动。
+        // 2. 布局：自适应两栏布局：
+        // 3. 防止垂直margin合并
+</script>
+</html>
