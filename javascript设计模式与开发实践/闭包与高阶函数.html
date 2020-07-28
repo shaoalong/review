@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div id='div1'>点击触发</div>
+    <!-- <div id='div1'>点击触发</div> -->
     <script>
         // 1.垃圾回收机制：垃圾收集器会按照固定的时间间隔周期性的执行这一操作：找出那些不再继续使用的变量，然后释放其占用的内存。
         // 1).标记清除：是对于脱离作用域的变量进行回收。当进入作用域时，进行标记，离开作用域时，标记并回收这些变量。
@@ -55,6 +55,10 @@
         // 不过上面的问题也不是不能解决，我们可以手动切断他们的循环引用：
         // myObject.element = null;
         // element.somObject = null;
+        // 或者弱引用
+        // const wm = new WeakMap()
+        // wm.set(element, myObject)
+        // console.log(wm.get(element))
         // 这样写代码的话就可以解决循环引用的问题，也就防止了内存泄漏的问题。
 
         // 减少javascript中的垃圾回收：即减少内存分配。最好的处理方法就是：在初始化的时候新建对象，然后在后续的过程中尽量多的重用这下创建的对象。
@@ -63,20 +67,49 @@
         // array优化：将[]赋值给一个数组对象，是清空数组的捷径，但需要注意的是，这种方式穿建了一个新的空对象，并且将原来的数组变成一小片内存垃圾！
         //             实际上，将数组长度赋值为0（arr.length = 0）也能达到清空数组的目的，并且同时实现数组的重用，减少内存垃圾的产生。
         // function优化：将方法作为返回值，就是一个动态创建方法的实例。
-
-
+        
         // 2.闭包：
-        //     1).作用域: 在javascript中，函数可以创建作用域。函数里面可以看到函数外的变量，
+        //     1).作用域: 作用域就是一套规则，用于确定在何处以及如何查找变量（标识符）的规则。
+        //             在javascript中，函数可以创建作用域。函数里面可以看到函数外的变量，
         //             而函数外的变量无法看到函数内的变量。搜索变量顺序是从内到外。
-        //     2).生命周期：全局变量的生命周期是永久的，除非我们主动撤销这个全局变量。
+        //     2).词法作用域：就是在你写代码时将变量和块作用域写在哪里来决定，也就是词法作用域是静态的作用域，在你书写代码时就确定了。
+        //             就是按照代码书写时的样子，内部函数可以访问函数外面的变量。引擎通过数据结构和算法表示一个函数，使得在代码解释执行
+        //             时按照词法作用域的规则，可以访问外围的变量，这些变量就登记在相应的数据结构中。
+        //     3).函数是一等对象：所谓的first class对象。就是可以把函数当作一个值来赋值，当作参数传递给别的函数，也就是把函数当作一个值retuen。
+        //             一个函数被当作值返回时，也就相当于返回了一个通道，这个通道可以访问这个函数词法作用域中的变量，即函数多需要的数据结构保存下来，
+        //             数据结构中的值在外层函数执行时构建，外层函数执行完毕时理应销毁，但是由于内部函数作为值返回出去，这些值得以保存下来。
+        //             而且无法直接访问，必须通过返回的函数。这就是私有性。
+        //     4).生命周期：全局变量的生命周期是永久的，除非我们主动撤销这个全局变量。
         //             而对于函数内定义的var变量，当函数退出时，这些变量就是去了价值，
         //             他们会随着函数调用的结束而被销毁。
+        //     javascript闭包的本质源于两点，词法作用域和函数当作值传递。
+        //     显然，闭包的形成很简单，在执行过程完毕后，返回函数，或者将函数得以保留下来，即形成了闭包。
         // 闭包的确会使一些数据无法被及时销毁。使用闭包的一部分原因是我们主动把一些变量创比在闭包中，因为可能在以后还需要
         // 使用这些变量，把这些变量放在闭包中和全局作用域，对内存方面的影响是一致的，这里并不能说是内存泄漏，如果在将来需要
         // 回收这些变量，我们就手动把这些变量设为null。将变量设置为null意味着切断变量与它此之前的值之间的链接。当垃圾收集器
         // 下次运行时，就会删除这些值并且回收占用的内存。
         // 跟闭包和内存泄漏有关系的地方是，使用闭包的同时比较容易形成循环引用，如果闭包的作用域链中保存着一些DOM节点，这时候
         // 就有可能造成内存泄漏。但这本身并非闭包的问题，也并非javascript的问题。
+
+
+        // forEach、map等遍历器有闭包效果：但不是闭包！那是因为Array.prototype.forEach和Array.prototype.map的定义。
+        // Array.prototype.forEach = function(callback){
+        //     var k = 0;
+        //     while(k < this.length){
+        //         var kValue;
+        //         kValue = this[ k ];
+        //         callback(kValue, k);
+        //         k++;
+        //     }
+        // }
+        // const obj = []
+        // const array = [1,2,3,4,5,6,7,8,9,10]
+        // array.forEach((v, i) => {
+        //     obj.push(() => {
+        //         console.log(i)
+        //     })
+        // })
+        // obj[6]()
 
         // 运用闭包生成类型判断函数系
         // var Type = {};
@@ -110,10 +143,11 @@
         //         return cache[args] = calculate.apply(null, arguments);
         //     };
         // })();
-
+        // mult(1, 5)
         // var sayHello;
-        // console.log(typeof (sayHey));//=>function    
+        // console.log(typeof (sayHey));//=>undefined    
         // console.log(typeof (sayHollo));//=>undefined
+        // debugger
         // if (false) {
         //     function sayHey() {
         //         console.log("sayHey");
@@ -130,7 +164,7 @@
         //     }
         // }    
         // sayHey();// => sayHey2    
-        // sayHello();// => sayHello
+        // sayHello();// => sayHello2
 
         // console.log(mult(1, 3, 5));
         // console.log(mult(1, 3, 5));
@@ -212,7 +246,7 @@
         //     push(arguments, 4);
         //     console.log(arguments);
         // })(1, 2, 3);
-        // 6).函数节流：函数被频繁调用（window.onresize/mousemove/上传进度）
+        // 6).函数节流：就是指连续触发事件但是在 n 秒中只执行一次函数.函数被频繁调用（window.onresize/mousemove/上传进度）
         // var throttle = function(fn, interval){
         //     var _self = fn,
         //         timer,
@@ -235,9 +269,34 @@
         //     };
         // };
         // window.onresize = throttle(function(){
-        //     console.log(1);
-        // }, 500);
-        // 7).分时函数：在短时间内网页面中大量添加DOM节点，浏览器会卡顿甚至卡死。这时候需要分时分批添加。
+        //     console.log('====');
+        // }, 2000, true);
+        // 7).防抖函数：就是指触发事件后在 n 秒内函数只能执行一次，如果在 n 秒内又触发了事件，则会重新计算函数执行时间。
+        // var debounce = function(fn, interval, immediate = false) {
+        //     var timer = null
+        //     return function() {
+        //         if (timer) {
+        //             clearTimeout(timer)
+        //         }
+
+        //         if (immediate) {
+        //             var callNow = !timer
+        //             timer = setTimeout(() => {
+        //                 timer = null
+        //             }, interval || 500)
+        //             if (callNow) fn.apply(this, arguments)
+        //         } else {
+        //             timer = setTimeout(() => {
+        //                 fn.apply(this, arguments)
+        //                 timer = null
+        //             }, interval || 500)
+        //         }
+        //     }
+        // }
+        // window.onresize = debounce(function(){
+        //     console.log('====');
+        // }, 2000, true);
+        // 8).分时函数：在短时间内网页面中大量添加DOM节点，浏览器会卡顿甚至卡死。这时候需要分时分批添加。
         // var arr = [];
         // for (var i = 0, l = 1000; i < l; i ++) {
         //     arr.push(i);
@@ -265,7 +324,7 @@
         //     document.body.appendChild(div);
         // }, 8);
         // renderFrendList(arr);
-        // 8).惰性加载函数：（例：浏览器嗅探）第一次调用有条件分支之后，在函数内部重写这个函数，重写之后的函数就是我们期望的addEvent函数，下一次进入的时候不在有条件判断。
+        // 9).惰性加载函数：（例：浏览器嗅探）第一次调用有条件分支之后，在函数内部重写这个函数，重写之后的函数就是我们期望的addEvent函数，下一次进入的时候不在有条件判断。
         // var addEvent = function(ele, type, handler){
         //     if (window.addEventListener) {
         //         addEvent = function(ele, type, handler) {
@@ -321,21 +380,22 @@
         // point.moveTo(1, 1);
         // console.log(x, y)
 
-        var length = 10;
+        // var length = 10;
 
-        function fn() {
-            console.log(this.length);
-        }
+        // function fn() {
+        //     console.log(this.length);
+        // }
 
-        var obj = {
-            length: 5,
-            method: function (fn) {
-                fn();
-                arguments[0]();
-            }
-        };
+        // var obj = {
+        //     length: 5,
+        //     method: function (fn) {
+        //         fn();
+        //         arguments[0]();
+        //     }
+        // };
 
-        obj.method(fn, 1); //输出是什么？
+        // obj.method(fn, 1); //输出是什么？
+        
     </script>
 </body>
 

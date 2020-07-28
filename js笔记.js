@@ -437,4 +437,89 @@
 20.flex布局会把伪元素当做元素来分配空间，但我们一般希望伪元素只有装饰作用，不影响布局，这与我们预期不一致。
 	所以，当flex布局中有伪元素时要特别小心。解决方案是：给伪元素绝对定位（position:absolute/fixed）
 
+21.keep-alive的组件进来后data不会时初始状态，若想初始化data可以用一下方法：
+	Object.assign(this.$data, this.$options.data.call(this))
 
+22.正则匹配
+	I.括号的区别与应用:
+		():圆括号()是组，主要应用在限制多选结构的范围/分组/捕获文本/环视/特殊模式处理
+			例子:
+			1.(abc|bcd|cde),表示这一段是abc、bcd、cde三者之一，顺序也必须一致。
+					const reg = /(abc|bcd|cde)/gi;
+					const str = 'jksagdhjgcyaabcde'
+					console.log(str.match(reg)) // ['abc']
+			2.(abc)? 表示这一组要么一起出现，要么不出现，出现则按顺序出现
+					const reg = /(abc)?rr/gi;
+					const str = 'jksagdhjgcyarrcde'
+					console.log(str.match(reg)) // ['rr']
+			3.(?:abc)表示找到一样abc的一组，但是不记录，不保存到变量中，否则可以通过x取第几个括号所匹到的项
+					const reg = /(aaa)(bbb)(ccc)(?:ddd)(eee)/gi;
+					const str = 'aaabbbcccdddeee123'
+					const test = reg.test(str)
+					const res = str.replace(reg, '$1 $2 $3 $4 ')
+					console.log(test)
+					console.log(res) // 'aaa bbb ccc eee 123'
+					$4表示的不是ddd而是eee，因为ddd不保存在变量中
+			4.a(?=bbb)顺序环视 表示a后面必须紧跟3个连续的b
+					const reg = /a(?=bbb)/gi;
+					const str = 'aaabbbcccdddeee123'
+					const test = reg.test(str)
+					const res = str.match(reg)
+					console.log(test)
+					console.log(res) // ['a']
+		[]字符类:方括号是单个匹配 字符集/排除字符集/命名字符集
+			1.[0-3]表示找到一个位置上的字符只能是0-3的四个数字
+					const reg = /^[1-9]/gi;
+					const str = '122'
+					const test = reg.test(str)
+					console.log(test)
+			2.[^0-3]表示找到这个位置上字符只能是除了0到3之外的所有字符
+					const reg = /[^0-3]/gi;
+					const str = '422'
+					const test = reg.test(str)
+					console.log(test)
+			3.
+					const reg = /[b(ab)]/gi;
+					const str = 'b(a)啊实打实的'
+					const test = reg.test(str)
+					const exec = reg.exec(str)
+					const match = str.match(reg)
+					console.log(test)
+					console.log(exec)
+					console.log(match)
+			
+		{}:一般是用来匹配的长度.(0-9)匹配'0-9'本身。[0-9]*匹配数字（注意后面有*，可以为空）[0-9]+匹配数字(注意后面有+，不可以为空)
+		
+	字符类：正则表达式字符类使用中括号[]定义。字符类有"字符"+"类"构成，字符很容易理解，比如字母或者数字等都是字符。类可以理解为某些共同特点，比如说人类、哺乳类等
+		1.字符类基本应用：
+			字符类可以匹配他所包含的任意一个字符，也就是说只要字符串中包含任意一个字符类的字符，那么就可以完成匹配。
+			特表说明: 字符类的字符是以字符为单位进行匹配的，不能是字符的组合。
+			let str="softwhy.com";
+			let one=/[ft]/g;
+			let two=/ft/g;
+			console.log(str.match(one)); // [ 'f', 't' ]
+			console.log(str.match(two)); // [ 'ft' ]
+		2.反字符类：中括号以^起始可以构成一个反字符类。
+			反字符类匹配除去中括号内所有字符外的任意一个字符。
+			let str="an6t888";
+			let reg=/[^0123456789]/g; // 匹配非数字字符
+			console.log(str.match(reg)); // [ 'a', 'n', 't' ]
+		3.定义字符类或者反字符类范围：所谓字符类范围（或者反字符类范围）就是指定起始与结尾字符，中间使用横线连接
+			let str="www.softawhy.com";
+			let reg=/[h-wab]/g; // 匹配h到w和a、b字符
+			console.log(str.match(reg)); // [ 'w', 'w', 'w', 's', 'o', 't', 'a', 'w', 'h', 'o', 'm' ]
+		4.预定义字符类：
+			.: 匹配任意字符(除了回车符'\r'和换行符'\n')
+			\w: 匹配字母数字。等价于[a-zA-Z0-9]
+			\W: 匹配非字母数字。等价于[^a-zA-Z0-9]
+			\d: 匹配数字。等价于[0-9]
+			\D: 匹配非数字。等价于[^0-9]
+			\s: 匹配空白符，包括空格符、制表符、回车符、换行符、垂直换行符和换页符。
+				let str="蚂蚁部落 \n http://www.softwhy.com"; 
+				let reg=new RegExp("\\s","g"); 
+				console.log(str.match(reg)); // [ ' ', '\n', ' ' ]
+				console.log(str.replace(reg, '')) // 蚂蚁部落http://www.softwhy.com
+			\S: 匹配非空白符
+	const reg = /<p>((?!img).)*<[/]p>/gi
+	var str = '<p><p> 我是纯文本<br> </p><strong></strong><img src="http://api-uat.kyeapi.com/router/download/iaams_baike_answer/14/507dd4691df743859b78295ad227d63f"></p>'
+	str.match(reg)

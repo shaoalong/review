@@ -15,7 +15,7 @@
         如果需要随机访问，数组任然是更好的选择。
     </p>
     <h3>链表 ：</h3>
-    <p>链表是由一组节点组成的集合。每个节点都使用一个对象的引用指向他的后继。指向下一个接地啊的引用叫做链</p>
+    <p>链表是由一组节点组成的集合。每个节点都使用一个对象的引用指向他的后继。指向下一个结点的引用叫做链</p>
     <h3>双向链表 ：</h3>
     <p>节点有前驱和后驱，可实现双向遍历</p>
     <script>
@@ -132,7 +132,6 @@
                 i++;
                 nums--;
             }
-            debugger;
             while (person.length() > leftNum) {
                 person.moveTo(offset);
                 person.remove(person.currentNode.element);

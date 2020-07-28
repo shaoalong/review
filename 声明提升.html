@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+    // 定义变量分为两步：1.声明变量，2.赋值变量
+    // 存在变量声明提升：即声明部分会提升到当前词法环境的最前面
+    // var a = 10;
+    // =>
+    // var a;
+    // a = 10;
+    //    console.log(a)
+    //    var a = 10
+    //    var a = 20
+    //    console.log(a)
+    //    => 
+    //    var a
+    //    console.log(a)
+    //    a = 10
+    //    a = 20
+    //    console.log(a)
+
+    // 存在函数声明提前:即声明部分会提升到当前词法环境的最前面
+    // console.log(fn)
+    // function fn() {
+    //     console.log('fn')
+    // }
+    // function fn() {
+    //     console.log('fn1')
+    // }
+    // => 
+    // function fn() {
+    //     console.log(fn)
+    // }
+    // function fn() {
+    //     console.log('fn1')
+    // }
+    // console.log(fn)
+
+
+    // 例子：
+    // var a = '[String a]'
+    // function a() {
+    //     console.log('[function a]')
+    // }
+    // console.log(a)
+    // =>
+    // var a
+    // function a() {
+    //     console.log('[function a]')
+    // }
+    // a = '[String a]'
+    // console.log(a)
+
+    // 具名立即执行函数的两个特性：1.只能在该立即执行函数中访问到该函数，2.函数名是不可修改的变量(常量)
+    var A = 1
+    // function A() {
+    //     console.log('Function A')
+    // }
+    ;(function A() {
+        console.log(A)
+        A = 2
+        console.log(A)
+    })();
+    console.log(A) // 1
+    </script>
+</body>
+</html>

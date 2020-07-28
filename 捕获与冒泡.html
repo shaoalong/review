@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div style="height: 100px;background-color:blue">
+        <ul>
+            <li>第一个li</li>
+            <li>第二个li</li>
+        </ul>
+    </div>
+    <script>
+        var html = document.documentElement
+        var body = document.body
+        var div = document.querySelector('div')
+        var ul = document.querySelector('ul')
+        var li = document.querySelector('li')
+
+        let bindEvent = function(el, type, callback, useCaptrue = false) {
+            if (document.addEventListener) {
+                bindEvent = function(el, type, callback, useCaptrue) {
+                    el.addEventListener(type, callback, useCaptrue)
+                }
+            } else if (document.attachEvant){
+                bindEvent = function(el, type, callback) {
+                    el.attachEvant('on' + type, callback)
+                }
+            } else {
+                bindEvent = function(el, type, callback) {
+                    el['on-' + type] = callback
+                }
+            }
+            bindEvent(el, type, callback, useCaptrue)
+        }
+
+        function callback(event) {
+            var target = event.currentTarget
+            console.log(target.tagName)
+        }
+        function callbackdiv(event) {
+            // event.stopPropagation()
+            console.log('div callback')
+        }
+        // bindEvent(ul, 'click', callback, true)
+        // bindEvent(li, 'click', callback, true)
+        // bindEvent(div, 'click', callbackdiv, true)
+        // div.onclick = () => {console.log('div onclick')}
+        // bindEvent(body, 'click', callback)
+        // bindEvent(html, 'click', callback)
+        // 结论1：先捕获再冒泡：捕获阶段 --> 目标阶段 --> 冒泡阶段
+        // 结论2：stopPropagation:终止事件在传播过程的捕获、目标处理或冒泡阶段进一步传播，阻止它被分派到其他dom；但不能阻止同一个dom上的其他事件句柄被调用
+        // 结论3：onclick绑定在冒泡阶段
+
+        // bindEvent(div, 'click', () => {console.log('ul冒泡')}, false)
+        // bindEvent(div, 'click', () => {console.log('ul捕获')}, true)
+        // 结论4：在元素上同时绑定捕获事件和冒泡事件，如果通过此元素的子级元素触发，则优先触发捕获事件，若不通过此元素的子级元素触发，则按照Javascript执行顺序触发。
+
+        // bindEvent(ul, 'click', callback, true)
+        // bindEvent(li, 'click', callback, true)
+        // bindEvent(div, 'click', callbackdiv, true)
+
+
+        // 事件委托：事件委托就是利用事件冒泡，只指定一个事件处理程序，就可以管理某一类型的所有事件
+        // 为什么使用事件委托：一般来说，dom需要有事件处理程序，我们都会直接给它设事件处理程序就好了，那如果是很多的dom需要添加事件处理呢？
+        // 比如我们有100个li，每个li都有相同的click点击事件，可能我们会用for循环的方法，来遍历所有的li，然后给它们添加事件，那这么做会存在什么影响呢？
+        //     1.在JavaScript中，添加到页面上的事件处理程序数量将直接关系到页面的整体运行性能，因为需要不断的与dom节点进行交互，
+        //      访问dom的次数越多，引起浏览器重绘与重排的次数也就越多，就会延长整个页面的交互就绪时间，这就是为什么性能优化的主要思想之一就是减少DOM操作的原因；
+        //      如果要用事件委托，就会将所有的操作放到js程序里面，与dom的操作就只需要交互一次，这样就能大大的减少与dom的交互次数，提高性能；
+        //     2.每个函数都是一个对象，是对象就会占用内存，对象越多，内存占用率就越大，自然性能就越差了，比如上面的100个li，就要占用100个内存空间，如果是1000个，10000个呢，那只能说呵呵了，
+        //      如果用事件委托，那么我们就可以只对它的父级（如果只有一个父级）这一个对象进行操作，这样我们就需要一个内存空间就够了，是不是省了很多，自然性能就会更好。
+        //     3.后面插入的dom节点不需要再对新增节点进行事件绑定。而如果不用事件委托，那么就要在加入节点后再对新增节点绑定事件
+        //     4.针对未来的节点，在此时对其进行绑定事件是无效的，因为找不到该节点。此时委托到document，确保事件绑定成功
+
+        // 什么时候不能用事件委托：
+        //     1.mouseover和mouseout虽然也有事件冒泡，但是这两个事件常常会涉及到坐标或位置，处理起来不太容易
+        //     2.focus、blur之类的没有冒泡特性的事件不能用事件委托
+
+        const EvetntUtil = {
+            getEvent(e) {
+                return e || window.e
+            },
+            getTarget(e) {
+                return e.target || e.srcElement
+            },
+            preventDefault(e) {
+                if (e.preventDefault) {
+                    e.preventDefault()
+                } else {
+                    e.returnValue = false
+                }
+            },
+            stopPropagation(e) {
+                if (e.stopPropagation) {
+                    e.stopPropagation()
+                } else {
+                    e.cancelBubble = true
+                }
+            }
+        }
+    </script>
+</body>
+</html>

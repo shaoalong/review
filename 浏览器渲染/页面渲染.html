@@ -34,7 +34,7 @@
 
     // 重绘(repaint):重绘是改变不影响元素在网页中的位置的元素样式时，譬如background-color(背景色)， border-color(边框色)， visibility(可见性)，浏览器会根据元素的新属性重新绘制一次(这就是重绘，或者说重新构造样式)，使元素呈现新的外观。重绘不会带来重新布局，所以并不一定伴随重排
     // 重排(Reflow):渲染对象在创建完成并添加到渲染树时，并不包含位置和大小信息。计算这些值的过程称为布局或重排。当改变影响到文本内容或结构，或者元素位置时，重排或者说重新布局就会发生
-    //   重排通常由一下时间触发：
+    //   重排通常由以下事件触发：
     //     1.DOM操作（元素添加、删除、修改或者元素顺序的改变）
     //     2.内容变化，包括表单域内的文本改变
     //     3.CSS属性的计算或改变
@@ -56,6 +56,9 @@
     // 如果文档中包含脚本，则脚本会阻塞文档的解析，而脚本需要等位于脚本前面的css加载完才能执行。在任何情况下，DOMContentLoaded 的触发不需要等待图片等其他资源加载完成。
     // 在 DOM 树构建完成后，WebKit 会触发 “DOMContentLoaded” 事件，当所有资源都被加载完成后，会触发 “onload” 事件。
 
+    // $('document').ready()的触发时机是dom加载完毕
+    // document.onload()的触发时机是页面所有内容(包括图片/flash/iframe等)加载完毕
+
     // DOMContentLoaded兼容写法
     // function ready(fn) {
     //   if (document.addEventListener) {
@@ -67,7 +70,7 @@
 
     //   // 如果IE
     //   else if (document.attachEvent) {
-    //     // 确保当页面是在iframe中加载时，事件依旧会被安全触发(iframe只支持onreadystatechange)
+    //     // document.onreadystatechange事件，判断readyState是否为complete,但是当页面有iframe时就无法及时触发了。因为等到iframe加载完毕readystate的值才会变成complete
     //     document.attachEvent('onreadystatechange', function () {
     //       if (document.readyState == 'complete') {
     //         document.detachEvent('onreadystatechange', arguments.callee);
@@ -75,7 +78,7 @@
     //       }
     //     });
 
-    //     // 如果是IE且页面不在iframe中时，轮询调用doScroll 方法检测DOM是否加载完毕
+    //     // 轮询调用doScroll 方法检测DOM是否加载完毕。
     //     if (document.documentElement.doScroll && typeof window.frameElement === "undefined") {
     //       try {
     //         document.documentElement.doScroll('left');

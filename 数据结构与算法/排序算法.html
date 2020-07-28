@@ -57,7 +57,7 @@
             for (var i = 1; i < arr.length; i++) {
                 var temp = arr[i];
                 var n = i;
-                while (n > 0 && temp < arr[n - 1]) {
+                while (n >= 0 && temp < arr[n - 1]) {
                     arr[n] = arr[n-1];
                     n--;
                 }

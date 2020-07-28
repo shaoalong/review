@@ -18,9 +18,130 @@
     // p{font-size:2rem}
     // 其实rem布局的本质是等比缩放，一般是基于宽度
 
+    // 物理像素:物理像素是每个手机在出场的时候，每个手机的设备像素，也叫硬件像素
+    // 逻辑像素:逻辑像素是css记录的像素
     // 设备像素比：DPR = 设备像素/CSS像素
     // 获得设备像素比（dpr）后，便可得知设备像素与CSS像素之间的比例。当这个比率为1:1时，使用1个设备像素显示1个CSS像素。当这个比率为2:1时，使用4个设备像素显示1个CSS像素，当这个比率为3:1时，使用9（3*3）个设备像素显示1个CSS像素。
 
+    一像素边框问题：
+      其实出现1px的原因在于，UI设计师要求的1px是物理像素，而我们开发写的css是逻辑像素，他们是不一样的，存在一个换算比例，通常javascript可以通过window.devicePixelRatio来获取，
+      在iphone上出现原因就是devicePixelRatio=2，而border-width=1,边框被放大了两倍，导致出现边框变宽。
+      解决方法:运用::after给元素添加伪元素，给伪元素设置border。通过media媒体查询，根据dpr整体缩放伪元素来实现
+    // mixin.scss
+    @mixin border-1px($color: #ccc, $borderRadius: 4px) {
+      position: relative;
+      border-width: 0;
+
+      &::after {
+        content: '';
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border: 1px solid $color;
+        transform-origin: 0 0;
+        box-sizing: border-box;
+        border-radius: $borderRadius;
+
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) { // dppx：dots per pixel(每像素包含点的数量)
+          width: 200%;
+          height: 200%;
+          transform: scale(0.5)
+        }
+
+        @media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 3dppx) {
+          width: 300%;
+          height: 300%;
+          transform: scale(0.33)
+        }
+      }
+    }
+
+    @mixin border($direction, $color, $opacity: 1) {
+      position: relative;
+      border-width: 0;
+
+      &::after {
+        position:absolute;
+        content: '',
+        box-sizing: border-box;
+        opacity: $opacity;
+
+        @if $direction == 'left' {
+          border-left: 1px solid $color;
+          top: 0;
+          left: 0;
+          height: 100%;
+          transform-origin: 0 0;
+        } @else if $direction == 'top' {
+          border-top: 1px solid $color;
+          top: 0;
+          left: 0;
+          width: 100%;
+          transform-origin: 0 0;
+        } @else if $direction == 'bottom' {
+          border-bottom: 1px solid $color;
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          transform-origin: 0 0;
+        } @else if $direction == 'right' {
+          border-right: 1px solid $color;
+          right: 0;
+          top: 0;
+          height: 100%;
+          transform-origin: 0 0;
+        }
+
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+          @if $direction == 'left' {
+            height: 200%;
+          } @else if $direction == 'top' {
+            width: 200%;
+          } @else if $direction == 'right' {
+            height: 200%;
+          } @else if $direction == 'top' {
+            width: 200%;
+          }
+          transform: scale(0.5);
+        }
+
+        @media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 3dppx) {
+          @if $direction == 'left' {
+            height: 300%;
+          } @else if $direction == 'top' {
+            width: 300%;
+          } @else if $direction == 'right' {
+            height: 300%;
+          } @else if $direction == 'top' {
+            width: 300%;
+          }
+          transform: scale(0.33);
+        }
+      }
+    }
+
+    @mixin border-none {
+      &::after {
+        display: none;
+      }
+    }
+
+    // sass-loader配置全局引入：prependData配置全局mixin
+    {
+      loader: 'sass-loader',
+      options: {
+        // 你也可以从一个文件读取，例如 `variables.scss`
+        // 如果 sass-loader 版本 < 8，这里使用 `data` 字段
+        prependData: `$color: red;@import "@/assets/mixin.scss";`
+      }
+    }
+
+    // scss文件引用mixin
+    <style lang='scss'>
+      @include border('bottom', #f1f1f1);
+    </style>
   </script>
 </body>
 

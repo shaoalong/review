@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    基础配置：
+    1. context(环境上下文): webpack配置文件的基础路径(是个绝对路径)
+    2. entry(入口)和output(输出):
+      1). entry: './src/js/main.js' => 以 './src/js/main.js' 文件为入口文件(单个入口)
+      2). {
+            entry: ['./src/js/main.js', './src/js/a.js'],
+            output: {
+              path: __dirname,
+              filename: './dist/js/bundle.js'
+            }
+          }
+          => 多个文件合并为bundle.js
+      3). {
+            entry: {
+              app: ['babel-polyfill', resolve('src/main.js')],
+              a: './src/js/a.js'
+            },
+            output: {
+              path: __dirname,
+              filename: './dist/js/[name]-[hash].js'
+            }
+          }
+          => 输出多文件合并成的app.js 和 a.js
+
+          output：
+            filename(文件名称)： 
+              id: Chunk的唯一标识，从0开始
+              name: Chunk的名称
+              hash: 打包的hash,每个文件的hash都是一样的
+              chunkhash: 文件的MD5值，每个文件都不一样
+            chunkFilename(包文件名称):配置无入口的Chunk在输出时的文件名称,不在output.entry中的文件，但是需要单独打包的文件名。（设置使用require.ensure或者import异步加载模块打包后的名称。）
+            publicPath(html文件引用文件相对或绝对路径)：也就是请求文件前缀。可设置CDN
+              publicPath： "http://cdn.example.com/assets/" => 当请求文件为'/image/login.png'时，会变成"http://cdn.example.com/assets//image/login.png" 
+            library：值被如何使用会根据output.libraryTarget的取值不同而不同。
+              而默认output.libraryTarget的取值是var，如果如下配置
+              output: {
+                library: 'myDemo'
+              }
+              如果在 HTML 页面中使用script标签引入打包结果文件，那么变量myDemo对应的值将会是入口文件(entry file)的返回值
+            libraryTarget：此配置的作用是控制 webpack 打包的内容是如何暴露的。支持输入string类型的值。默认值：var。请注意这个选项需要和output.library所绑定的值一起产生作用。
+              假设output.library值是myDemo。_entry_return_表示入口点返回的值。
+              1.var(默认值):使用这个配置，当库被加载时，那么库的返回值会被分配到使用用var申明的变量上。（如果没有设置output.library值，那么将不会发生赋值行为）
+                var myDemo = _entry_return_；
+                js文件：
+                myDemo();
+              2.assign：使用这个设置，会把库返回值分配给一个没使用var申明的变量中，如果这个变量没有在引入作用域中提前申明过，那么将会挂载在全局作用域中。（注意，这个行为有可能会覆盖全局作用域中的已有变量）
+                myDemo = _entry_return_;
+              3.this:将库的返回值分配给this对象的由output.library指定的属性。其中this的意义由用户决定
+                this['myDemo'] = _entry_return_;
+                js文件:
+                this.myDemo()
+                myDemo() // 如果this是window
+              4.window:将库的返回值分配给window对象的由output.library指定的属性。
+                window["myDemo"] = _entry_return_;
+                js文件:
+                window.myDemo.doSomething();
+              5.global：将库的返回值分配给global对象的由output.library指定的属性。
+                global["myDemo"] = _entry_return_;
+                js文件:
+                global.myDemo();
+              6.commonjs:将库的返回值分配给exports对象的由output.library指定的属性。正如名字所指，这个选项可以使用在 CommonJS 环境。
+                exports["myDemo"] = _entry_return_;
+                js文件:
+                require("myDemo").doSomething();
+              7.commonjs2:将库的返回值分配给module.exports。正如名字所指，这个选项可以使用在 CommonJS 环境。（注意，在这个情况下output.library不是必须的，因为此时output.library选项将会被忽略。）
+                module.exports = _entry_return_;
+                js文件:
+                const myDemo = require("myDemo");
+                myDemo();
+              8.amd:这个选项会把库作为 AMD 模块导出
+                AMD模块要求输入脚本（例如由<script>标签加载的第一个脚本）被定义为具有特定属性，例如通常由 RequireJS 或任何兼容的加载器（诸如almond）提供的require和define属性。否则，直接加载生成的 AMD 捆绑包将导致类似define is not defined的错误。
+                define("myDemo", [], function() {
+                  return _entry_return_;
+                });
+                js文件:
+                require(['myDemo'], function(myDemo) {
+                // Do something with the library...
+                myDemo();
+                });
+              9.umd: 这个选项会尝试把库暴露给当前使用的模块定义系统，这使其和CommonJS、AMD兼容或者暴露为全局变量。output.library 选项在这里是必须的
+                (function(root, factory) {
+                  if (typeof exports === 'object' && typeof module === 'object') {
+                    module.exports = factory()
+                  } else if (typeof define === 'function' && define.amd) {
+                    define([], factory())
+                  } else if (typeof exports === 'object') {
+                    exports['myDemo'] = factory()
+                  } else {
+                    root['myDemo'] = factory()
+                  }
+                })(typeof self !== 'undefined' ? self : this, function() {
+                  return _entry_return_;
+                })
+
+    3. externals：意思是如果需要引用一个库，但是又不想让webpack打包（减少打包的时间），并且又不影响我们在程序中以CMD、AMD或者window/global全局等方式进行使用（一般都以import方式引用使用），那就可以通过配置externals。
+        这样做的目的就是将不怎么需要更新的第三方库脱离webpack打包，不被打入bundle中，从而减少打包时间，但又不影响运用第三方库的方式，例如import方式等。
+          {
+            output: {
+              libraryTarget: 'umd',
+            },
+            externals: {
+              jquery: 'jQuery' // 等价于 jquery: 'global jQuery': 当require的参数是jquery的时候，使用jQuery这个全局变量引用它
+            }
+          }
+
+          const $ = require("jquery")
+          $("#content").html("<h1>hello world</h1>")
+          上面这种配置方法，告诉webpack，输出的时候会采用umd模块化方案（如果你了解过umd的话），所以webpack就会把我们的源码的require部分处理成如下的结果：
+          // 省略umd部分...
+            ({
+              0: function(...) {
+                var jQuery = require(1);
+                /* ... */
+              },
+              1: function(...) {
+                // 很明显这里是把window.jQuery赋值给了module.exports
+                // 因此我们便可以使用require来引入了。
+                module.exports = jQuery;
+              },
+              /* ... */
+            });
+
+            externals: {
+              jquery: 'jQuery',
+              lodash: {
+                commonjs: 'lodash',
+                amd: 'lodash',
+                root: '_'
+              }
+            }
+            这意思就是说，你打包的时候，webpack会考虑任何可能的形式去进行匹配，你就不必去考虑应该用require('lodash')还是直接使用全局变量_来引入lodash到你的bundle中了。
+            理解了上面这些之后，无论是在array形式里面，还是在object形式里面，甚至function形式里面，只要是为了返回一个key => string value形式，甚至只是string形式，都遵循这些模块化规范的规则，包括function形式里面，你可以看到示例代码里面，其实也会考虑在callback的参数中，加入commonjs作为前缀。
+    
+    4. resolve:Webpack 在启动后会从配置的入口模块出发找出所有依赖的模块，Resolve 配置 Webpack 如何寻找模块所对应的文件。 Webpack 内置 JavaScript 模块化语法解析功能，默认会采用模块化标准里约定好的规则去寻找，但你也可以根据自己的需要修改默认的规则。
+          alias: 通过别名来把原导入路径映射成一个新的导入路径
+          extensions: 在导入语句没带文件后缀时，Webpack 会自动带上后缀后去尝试访问文件是否存在。resolve.extensions 用于配置在尝试过程中用到的后缀列表。默认是：extensions: ['.js', '.json']
+    5. module: 配置如何处理模块
+          rules： 配置模块的读取和解析规则，通常用来配置 Loader。其类型是一个数组，数组里每一项都描述了如何去处理部分文件
+            1.条件匹配：test/include/exclude 三个配置项命中Loader要停用规则的文件
+            2.应用规则：对选中后的文件通过 use 配置项来应用 Loader，可以只应用一个 Loader 或者按照从后往前的顺序应用一组 Loader，同时还可以分别给 Loader 传入参数
+            3.重置顺序：一组 Loader 的执行顺序默认是从右到左执行，通过 enforce 选项可以让其中一个 Loader 的执行顺序放到最前或者最后。
+        module: {
+          rules: [
+            {
+              // 命中 JavaScript 文件
+              test: /\.js$/,
+              // 用 babel-loader 转换 JavaScript 文件
+              // ?cacheDirectory 表示传给 babel-loader 的参数，用于缓存 babel 编译结果加快重新编译速度
+              use: ['babel-loader?cacheDirectory'],
+              // 只命中src目录里的js文件，加快 Webpack 搜索速度
+              include: path.resolve(__dirname, 'src')
+            },
+            {
+              // 命中 SCSS 文件
+              test: /\.scss$/,
+              // 使用一组 Loader 去处理 SCSS 文件。
+              // 处理顺序为从后到前，即先交给 sass-loader 处理，再把结果交给 css-loader 最后再给 style-loader。
+              use: ['style-loader', 'css-loader', 'sass-loader'],
+              // 排除 node_modules 目录下的文件
+              exclude: path.resolve(__dirname, 'node_modules'),
+            },
+            {
+              // 对非文本文件采用 file-loader 加载
+              test: /\.(gif|png|jpe?g|eot|woff|ttf|svg|pdf)$/,
+              use: ['file-loader'],
+            },
+            {
+              loader:'babel-loader',
+              options:{
+                cacheDirectory:true,
+              },
+              // enforce:'post' 的含义是把该 Loader 的执行顺序放到最后
+              // enforce 的值还可以是 pre，代表把 Loader 的执行顺序放到最前面
+              enforce:'post',
+              // noParse 配置项可以让 Webpack 忽略对部分没采用模块化的文件的递归解析和处理，这样做的好处是能提高构建性能。原因是一些库例如 jQuery 、ChartJS 它们庞大又没有采用模块化标准，让 Webpack 去解析这些文件耗时又没有意义
+              noParse: /jquery|chartjs/
+            },
+          ]
+        }
+      6. plugins
+        webpack.DefinePlugin: 定义环境变量
+        webpack.ProvidePlugin：自动加载模块，而不必到处 import 或 require
+        html-webpack-plugin: 使用模版生成 html 文件,并将最终生成的js，css以及一些静态资源文件以script和link的形式动态插入其中
+        copy-webpack-plugin: 对资源进行拷贝,例如一些静态资源直接拷贝到打包后的文件夹中
+        webpack.HotModuleReplacementPlugin: 代码热更新，用于调试模式
+        webpack-dev-middleware: 用它输出的文件会存在内存里，构建速度相当快，所以可以利用它配合服务器（如express）作为静态资源服务器（本地）用于开发
+        webpack-hot-middleware（HMR）: 实现了浏览器无刷新更新
+        webpack-dev-server: 它本身就是一个express服务器，它就是封装了webpack-dev-middleware
+        http-proxy-middleware: 将请求转发给其它服务器
+        extract-text-webpack-plugin: 将你项目中的css都单独打包，不会内嵌到js bunlde中，这样css和js即可并行加载
+        optimize-css-assets-webpack-plugin: 对css文件进行优化和最小化操作
+        uglifyjs-webpack-plugin: 对js文件进行压缩并且结合tree shaking删除未引用代码
+        imagemin-webapack-plugin: 对项目中的图片进行压缩
+
+        happypack： 使得webpack进行node多线程构建项目，从而提高构建速度。在使用 Webpack 对项目进行构建时，会对大量文件进行解析和处理。当文件数量变多之后，Webpack 构件速度就会变慢。
+          由于运行在 Node.js 之上的 Webpack 是单线程模型的，所以 Webpack 需要处理的任务要一个一个进行操作。而 Happypack 的作用就是将文件解析任务分解成多个子进程并发执行。子进程处理完任务后再将结果发送给主进程。所以可以大大提升 Webpack 的项目构件速度
+        webpack.DllPlugin（动态链接库：dynamic link library）: 我们在项目中一定会引入不少第三方的库，例如一些框架啊工具啊啥的，我们一般来说不会去改动这些文件，所以我们期盼的效果是在不改动这些库文件的情况下，打包一次就够了
+        webpack.DllReferencePlugin: 根据分析的结构决定是从打包的库中拿，还是node_modules中拿；
+        add-asset-html-webpack-plugin: 将dll.js静态资源自动插入index.html中
+
+        webpack.dll.config.js:
+        const path = require('path')
+        const webpack = require('webpack')
+        const ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin')
+        const env = require('../config/prod.env')
+        module.exports = {
+          entry: {
+            kyerplib: ['vue/dist/vue.runtime.esm.js', 'vue-router', 'vuex', 'element-ui', 'lodash', 'axios', 'moment']
+          },
+          output: {
+            path: path.join(__dirname, '../dll'),
+            filename: '[name].dll.[chunkhash].js',
+            library: '[name]'
+          },
+          resolve: {
+            alias: {
+              '@build': path.join(__dirname, './replace')
+            }
+          },
+          plugins: [
+            new webpack.ProvidePlugin({
+              jQuery: 'jquery', // jQuery('#item')
+              $: 'jquery', // $('#item')
+              Vue: ['vue/dist/vue.esm.js', 'default'], // 在文件中无需import 直接使用Vue（因vue.esm.js时ES6 defalut export,所以这里需要导出的时default）
+              _map: ['lodash', 'map'] // 文件中使用_map即为lodash的map，无需引入
+            }),
+            new webpack.DefinePlugin({ 'process.env': env }),
+            new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /zh-cn/),
+            new webpack.NormalModuleReplacementPlugin(/element-ui\/lib\/utils\/clickoutside/, '@build/clickoutside.js'),
+            new webpack.DllPlugin({
+              path: path.join(__dirname, '../dll', '[name]-manifest.json'),
+              name: '[name]'
+            }),
+            new ParallelUglifyPlugin({
+              sourceMap: false,
+              uglifyES: {
+                output: {
+                  comments: false
+                },
+                compress: {
+                  warnings: false,
+                  drop_console: true
+                }
+              }
+            })
+          ]
+        }
+        webpack.prod.config.js:
+        const AddAssetHtmlPlugin = require('add-asset-html-webpack-plugin')
+        const HappyPack = require('happypack')
+        const happyThreadPool = HappyPack.ThreadPool({ size: 4 })
+        {
+          module: {
+            rules: [
+            {
+              test: /\.js$/,
+              use: [
+                'cache-loader', // 在一些性能开销较大的 loader 之前添加此 loader，以将结果缓存到磁盘里。保存和读取这些缓存文件会有一些时间开销，所以请只对性能开销较大的 loader 使用此 loader
+                'happypack/loader?id=babel'
+              ],
+              include: bableInclus
+            },
+            ]
+          },
+          plugins: [
+            new HappyPack({
+              id: 'babel', // 上面loader?后面指定的id
+              loaders: ['babel-loader?cacheDirectory=true'],
+              threadPool: happyThreadPool
+            }),
+            new webpack.DllReferencePlugin({
+              manifest: require('../dll/kyerplib-manifest.json')
+            }),
+            new AddAssetHtmlPlugin({
+              filepath: path.resolve(__dirname, '../dll/kyerplib.dll.*.js'),
+              publicPath: config.build.assetsPublicPath + 'static/js',
+              outputPath: '../dist/static/js',
+              includeSourcemap: false
+            }),
+          ]
+        }
+        
+  webpack构建过程：loader转译 --> webpack转换
+    源代码(原始源代码)：
+    import {test} from "module"; class A extends test {}
+    -->
+    loader转译后的代码(转换过的代码)：
+    import {test} from "module"; var A = function(_test) { ... }(test)
+    -->
+    webpack转换后的代码(生成后的代码)：
+    var module__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(42); module__WEBPACK_IMPORTED_MODULE_1__.a()
+
+  项目构建时的优化方法：
+      基础配置：
+        1.针对js和vue文件，使用cache-loader；因vue-loader和babel-loader性能开销较大，使用cache-loader将结果缓存到磁盘里。
+        2.针对非js/css文件，使用url-loader;如果文件小于10M，就把文件便以为base64
+        3.针对jquery/lodash第三方库，使用ProvidePlugin使得库自动加载，而不必到处import或require
+      dev环境：
+        1.devtool设置为cheap-module-eval-source-map,可以定位到未经loader处理的源代码(原始源代码)的具体行，而且eval可以提升rebuild速度
+        2.使用express服务器利用webpack-dev-middleware配合webpack-hot-middleware中间件，并把文件存储到内存中构建速度很快,实现浏览器无刷新更新的自动化开发环境
+      prod环境：
+        1.devtool设置为source-map,可以定位到未经loader处理的源代码(原始源代码)的具体行列。（你应该将你的服务器配置为不允许普通用户访问 source map 文件）
+        2.针对js和vue文件使用happypack,使得webpack进行node多线程构建项目，从而提高构建速度
+        3.针对'vue/dist/vue.runtime.esm.js', 'vue-router', 'vuex', 'element-ui', 'lodash', 'axios', 'moment'等引用的第三方库，因代码不会改变，为了提升构建速度及减小包的体积，使用DllPlugin插件把这些代码单独打包并引用。
+        4.针对echart和jquery这种第三方插件可以使用externals配置通过cdn引入script，不让他打包到vendor包中，减小包体积并提升构建速度
+        5.针对样式表，使用optimize-css-assets-webpack-plugin插件压缩优化css文件
+        6.针对js，使用uglifyjs-webpack-plugin插件压缩优化js文件
+  </script>
+</body>
+
+</html>

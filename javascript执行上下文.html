@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    执行上下文(execution context)：有时也称执行上下文环境、环境或者执行环境。
+            js代码在执行前，js引擎总要做一单准备工作，这份工作其实就是创建对应的执行上下文。
+            执行上下文有且只有三类：全局执行上下文，函数上下文，eval上下文；
+      1.全局执行上下文： 只有一个，在客户端中一般由浏览器创建，也就是我们熟知的window对象，我们能通过this直接访问到它。
+          全局对象window上预定义了大量的方法和属性，我们在全局环境的任意处都快可以访问这些属性方法，同时window对象还是var声明的全局变量的载体。
+          我们可以通过var创建的全局对象，都可以通过window直接访问。
+      2.函数执行上下文：可存在无数个，每当一个函数被调用都会创建一个函数上下文；需要注意的是，同一个函数被多次调用，都会创建一个新的上下文。
+    
+    执行上下文栈：也叫执行栈或者调用栈(call stack)，调用栈用于存储代码执行期间创建的所有上下文，具有后进先出的特性。js代码首次运行，都会创建一个
+          全局执行上下文并压入调用栈中，之后每当有函数被调用，都会创建一个新的函数执行上下文并压入栈中；
+          由于调用栈后进先出的特性，所以可以理解为，js代码执行完毕前在调用栈底部永远有个全局执行上下文。
+
+    执行上下文创建阶段：js执行上下文的创建阶段主要负责三件事：确定this，创建词法环境组件(LexicalEnvironment)，创建变量环境组件(variableEnvironment)
+      伪代码表示为：  
+      ExecutionContext = {
+        ThisBinding = <this value>,
+        LexicalEnvironment = {},
+        VariableEnvironment = {}
+      }
+      1.确定this：官方的称呼为 This Binding,在全局执行上下文中，this总是指向全局对象，例如浏览器环境下this指向window对象。而在函数执行上下文中，this的
+          值就要取决于函数调用的方式了，如果函数被一个对象调用，那么this就是这个对象，否则this一般指向全局对象window或者undefined(严格模式)
+      2.词法环境组件：词法环境是一个包含标识符变量映射的结构，这里标识符表示变量/函数的名称，变量是对实际对象(包括函数类型对象)或原始值的引用。
+          词法环境有环境记录和对外部环境引入记录两个部分组成。其中环境记录用于存储当前环境的变量和函数声明的实际位置；外部环境引入记录很好理解，它用于保存自身环境可以访问的外部环境。
+          我们在前文提到了全局执行上下文和函数执行上下文，所以也导致了词法环境分为全局词法环境和函数词法环境。
+          1).全局词法环境：对外部环境的引入记录为null，因为它本身就是最外层环境，除此之外它还记录了当前环境下的所有属性、方法位置。
+          2).函数词法环境：包含用户在函数中定义的所有属性方法外，还包含一个arguments对象。函数词法环境的外部引入可以是全局环境，也可以是其它函数环境，这个根据代码而来。
+          全局环境伪代码：
+          GlobalExecutionContext = {
+            // 全局词法环境
+            LexicalEnvironment： {
+              // 环境记录
+              EnvironmentRecord: {
+                Type: 'Object', // 类型为对象环境记录
+                // 标识符绑定在这里 
+              },
+              // 外部引入环境记录
+              outer: <null>
+            }
+          }
+          函数环境伪代码：
+          FunctionExecutionContext = {
+            // 函数词法环境
+            LexicalEnvironment: {
+              EnvironmentRecord: {
+                Type: 'Declarative', // 类型声明性环境记录
+                // 标识符绑定在这里 
+              },
+              outer: < Global or outerfunction environment reference >
+            }
+          }
+      3.变量环境组件：变量环境可以说是词法环境，它具备词法环境所有属性，一样有环境记录和外部环境引入。在ES6中唯一的区别在于
+            词法环境用于储存函数声明与let const声明的变量，而变量环境仅仅存储var声明的变量。
+            let a = 20;  
+            const b = 30;  
+            var c;
+            function multiply(e, f) {  
+            var g = 20;  
+            return e * f * g;  
+            }
+            c = multiply(20, 30);
+
+            我们用伪代码来描述上述代码中执行上下文的创建过程：
+            //全局执行上下文
+            GlobalExectionContext = {
+                // this绑定为全局对象
+                ThisBinding: <Global Object>,
+                // 词法环境
+                LexicalEnvironment: {  
+                    //环境记录
+                  EnvironmentRecord: {  
+                    Type: "Object",  // 对象环境记录
+                    // 标识符绑定在这里 let const创建的变量a b在这
+                    a: < uninitialized >,  
+                    b: < uninitialized >,  
+                    multiply: < func >  
+                  }
+                  // 全局环境外部环境引入为null
+                  outer: <null>  
+                },
+              
+                VariableEnvironment: {  
+                  EnvironmentRecord: {  
+                    Type: "Object",  // 对象环境记录
+                    // 标识符绑定在这里  var创建的c在这
+                    c: undefined,  
+                  }
+                  // 全局环境外部环境引入为null
+                  outer: <null>  
+                }  
+              }
+
+              // 函数执行上下文
+              FunctionExectionContext = {
+                //由于函数是默认调用 this绑定同样是全局对象
+                ThisBinding: <Global Object>,
+                // 词法环境
+                LexicalEnvironment: {  
+                  EnvironmentRecord: {  
+                    Type: "Declarative",  // 声明性环境记录
+                    // 标识符绑定在这里  arguments对象在这
+                    Arguments: {0: 20, 1: 30, length: 2},  
+                  },  
+                  // 外部环境引入记录为</Global>
+                  outer: <GlobalEnvironment>  
+                },
+              
+                VariableEnvironment: {  
+                  EnvironmentRecord: {  
+                    Type: "Declarative",  // 声明性环境记录
+                    // 标识符绑定在这里  var创建的g在这
+                    g: undefined  
+                  },  
+                  // 外部环境引入记录为</Global>
+                  outer: <GlobalEnvironment>  
+                }  
+              }
+              在执行上下文创建阶段，函数声明与var声明的变量在创建阶段已经被赋予了一个值，var声明被设置为了undefined，函数被设置为了自身函数，
+              而let  const被设置为未初始化。这就是变量提升和函数声明提前以及let const有暂时性死区的根本原因
+    
+    作用域(scope)：指的是变量的适用范围，即在程序的执行上下文中变量的可访问性。就是变量和函数的可访问范围，即作用域控制着变量和函数的可见性和生命周期。
+              作用域是针对变量的，比如我们创建了一个函数，函数里面又包含了一个函数，那么现在就有三个作用域了：全局作用域 ==> 函数1作用域 ==> 函数2的作用域。
+              只要函数创建了，就可能产生一个作用域，一个独立的区域，不管函数是否调用。
+    作用域链(scope chain): 根据内部函数可以访问外部函数变量的这种机制，用链式查找决定哪些数据能被内部函数访问。
+              在javascript中，函数也是对象，对象中有些属性我们可以访问，但有些不可以，这些属性仅供javascript引擎存取，[[scope]]就是其中一个。
+              [[scope]]值得就是所说的作用域，其中存储了执行上下文的集合，这个集合呈链式链接，我们把这种链式连接叫做作用域链。
+    闭包(closure):函数以及声明该函数的词法环境的组合一起构成了闭包。(MDN的定义)
+              也就是说，闭包可以让你从内部函数访问外部函数的作用域。在javascript中，每当函数被创建，就会在函数生成时生成闭包。
+    原型链: 原型链是针对构造函数的，比如我先创建一个函数，然后通过一个变量new了这个函数，那么这个被new出来的函数就会继承创建出来的那个函数的属性，
+            然后如果我访问new出来的这个函数的某个属性，但是我并没有在这个new出来的函数中定义变量，那么他就会往上(向创建出他的函数中)查找，这个查找的过程叫做原型链。
+    自由变量:在当前作用域中存在但未在当前作用域中声明的变量叫自由变量。
+    
+    总结：
+        1.javascript使用的是词法作用域。对于函数来说，词法作用域是在函数定义时就已经确定了，与函数是否被调用无关。
+          通过作用域，可以知道作用域范围内的变量和函数有哪些，却不知道变量的值是什么。所以时静态作用域。
+        2.对于函数来说，执行环境是在调用函数时确定的，执行环境包含作用域内所有变量和函数的值。
+          在同一个作用域下，不同的调用会产生不同的执行环境，从而产生不同的变量的值。所以执行环境的动态的。
+        3.一个作用域中可能有多个上下文执行环境(闭包),或者一个上下文环境都没有(函数执行完成，上下文环境销毁，或者没有调用函数)
+        4.由定义可知，作用域时在函数声明的时候就确定的一套变量访问规则，而执行上下文是函数执行时才产生的一系列变量的集合体。
+          也就是作用域定义了执行上下文中的变量的访问规则，执行上下文是在这个作用域规则的前提下执行代码的。
+        5.建立执行上下文：
+              1).生成变量对象：创建arguments对象，创建function函数声明，创建var变量声明
+              2).生成作用域链
+              3).确定this指向
+              
+  </script>
+</body>
+
+</html>

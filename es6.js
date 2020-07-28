@@ -528,44 +528,17 @@
 // console.log(Object.getOwnPropertyNames(inst.__proto__))
 // console.log(Object.getOwnPropertySymbols(inst.__proto__))
 
-const b = new ArrayBuffer(8);
-const v1 = new Int32Array(b);
-const v2 = new Uint8Array(b, 2);
-const v3 = new Int16Array(b, 2, 2);
-v3[0] = 259
+// const b = new ArrayBuffer(8);
+// const v1 = new Int32Array(b);
+// const v2 = new Uint8Array(b, 2);
+// const v3 = new Int16Array(b, 2, 2);
+// v3[0] = 259
 // console.log(v1)
 // console.log(v2)
-console.log(v3)
+// console.log(v3)
 
 // const f64a = new Float64Array(8);
 // f64a[0] = 10;
 // f64a[1] = 20;
 // f64a[2] = f64a[0] + f64a[1];
 // console.log(f64a)
-
-
-const obj = {
-    dZoneNo: [1],
-    dWayNo: ['A'],
-    dRow: ['a'],
-    dLayer: ['@', '&'],
-    dGrid: []
-}
-
-function transfer() {
-    const arr = ['dZoneNo', 'dWayNo', 'dRow', 'dLayer', 'dGrid'];
-    let idx = arr.findIndex(x => obj[x].length === 0);
-    idx = idx - 1 > -1 ? idx - 1 : arr.length - 1;
-    console.log(idx)
-    return obj[arr[idx]].map(x => {
-        const xx = {};
-        arr.forEach((y, index) => {
-            if (index < idx) {
-                xx[y] = obj[y]
-            }
-        })
-        xx[arr[idx]] = x;
-        return xx;
-    })
-}
-console.log(transfer())
