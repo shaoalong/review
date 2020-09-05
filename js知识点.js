@@ -520,3 +520,85 @@
         }
       }, docs[index]);
     })(0);
+
+16.JSON(JavaScript Object Notation):js对象记法-指的是将Object以文本的方式给记录下来。(显而易见就是字符串)
+	JSON与js对象的联系：
+		1.JSON是基于js的一种格式，而js对象是一个实例，是存在于内存中的一个东西
+		2.JSON是可以传输的，因为他是文本格式，但js对象是没办法传输的
+		3.JSON在语法上更加严格，js对象很轻松。譬如，键名必须加双引号，属性值不能是函数，最后一个属性后面不能有逗号
+		var obj1 = {}; // 这只是 JS 对象
+		var obj2 = {"width":100,"height":200,"name":"rose"}; // 可把这个称做：JSON 格式的 JavaScript 对象
+		var str1 = '{"width":100,"height":200,"name":"rose"}'; // 可把这个称做：JSON 格式的字符串
+		var arr = [  // 这个可叫 JSON 格式的数组，是 JSON 的稍复杂一点的形式
+			{"width":100,"height":200,"name":"rose"},
+			{"width":100,"height":200,"name":"rose"},
+			{"width":100,"height":200,"name":"rose"},
+		];
+		var str2='['+  // 这个可叫稍复杂一点的 JSON 格式的字符串   
+			'{"width":100,"height":200,"name":"rose"},'+
+			'{"width":100,"height":200,"name":"rose"},'+
+			'{"width":100,"height":200,"name":"rose"},'+
+		']';
+	JSON.stringify(value[, replacer [, space]]):将JS数据结构转化为JSON字符串
+		value:js数据结构。
+		replacer:如果是函数，那么序列化过程中的每个属性都白这个函数处理；如果是数组，那么只有包含在数组里的属性才会被序列化到JSON字符串中
+		space:转化为JSON字符串缩进用的空白字符；如果是数字就表示空格的个数，如果是字符串就表示用该字符串代替空格
+		注意点：
+			1.键名不是双引号的（包括没有引号或者是单引号），会自动变成双引号；字符串是单引号的，会自动变成双引号
+			2.最后一个属性后面有逗号的，会被自动去掉
+			3.非数组对象的属性不能保证以特定的顺序出现在序列化后的字符串中。这个好理解，也就是对非数组对象在最终字符串中不保证属性顺序和原来一致
+			4.布尔值、数字、字符串的包装对象在序列化过程中会自动转换成对应的原始值,也就是你的什么new String("bala")会变成"bala"，new Number(2017)会变成2017
+			5.undefined、任意的函数（其实有个函数会发生神奇的事，后面会说）以及 symbol 值（symbol详见ES6对symbol的介绍）
+				出现在非数组对象的属性值中：在序列化过程中会被忽略
+				出现在数组中时：被转换成 null
+			6.NaN、Infinity和-Infinity，不论在数组还是非数组的对象中，都被转化为null
+			7.所有以 symbol 为属性键的属性都会被完全忽略掉，即便 replacer 参数中强制指定包含了它们
+			8.不可枚举的属性会被忽略
+		例：
+		var obj = { a: 1, b: 2 }
+		var objJson = JSON.stringify(obj) // '{"a":1,"b":2}'
+		var objJson = JSON.stringify(obj, ['a']) // '{"a":1}'
+		var objJson = JSON.stringify(obj, (key, value) => {
+			console.log(key, value)
+			if (value === 2) {
+				return 4
+			} else {
+				return value
+			}
+		}) // '{"a":1,"b":4}'
+		var objJson = JSON.stringify(obj, null, 1)
+		// {
+		// 	"a": 1,
+		// 	"b": 2
+		// }
+		var objJson = JSON.stringify(obj, null, '___')
+		// {
+		// ___"a": 1,
+		// ___"b": 2
+		// }
+		console.log(objJson)
+
+		// var res = JSON.stringify({x: undefined, y: function(){return 1}, s: Symbol('123'), a: '123'}) // '{"a":"123"}'
+		// var res = JSON.stringify([undefined, function y (){return 1}, Symbol('123'), '123']) // '[null,null,null,"123"]'
+		var res = JSON.stringify(12) // "12"
+		var res = JSON.stringify(new Number(123)) // "12"
+		var res = JSON.stringify('12') // '"123"'
+		console.log(res)
+	JSON.parse(text[, reviver])：将JSON字符串解析为JS数据结构
+		text:JSON字符串
+		reviver: 这个参数必须是一个函数，这个函数作用在属性已经被解析但是还没返回前，将属性处理后再返回
+		var friend={  
+			"firstName": "Good",
+			"lastName": "Man",
+			"phone":{"home":"1234567","work":["7654321","999000"]}
+		};
+		var friendJSON = JSON.stringify(friend);
+		console.log(friendJSON)
+		var friend1 = JSON.parse(friendJSON, function(k, v) {
+			console.log(k);
+			console.log(v);
+			console.log("----");
+			if (k === 'home') return '18898563651'
+			return v
+		})
+		console.log('=>',friend1)

@@ -72,7 +72,60 @@
             “[a-z0-9]+”首先尝试匹配“a”，匹配成功，继续尝试匹配，可以成功匹配接下来的“1”和“2”，此时已经匹配到位置3，位置3的右侧已没有字符，这时会把控制权交给“$”；
             元字符“$”从位置3开始尝试匹配，它匹配的是结束位置，也就是“位置3”，匹配成功。
             此时正则表达式匹配完成，报告匹配成功。匹配结果为“a12”，开始位置为0，结束位置为3。其中“^”匹配位置0，“(?=[a-z])”匹配位置0，“[a-z0-9]+”匹配字符串“a12”，“$”匹配位置3。
-四.括号的区别与应用:
+四.贪婪模式与懒惰模式(非贪婪模式)
+    贪婪模式:会匹配最长的以开始位置开始，以结束位置结束的字符串
+    懒惰模式:匹配尽可能少的字符
+    在限定符后加?,则为懒惰模式；在限定符后不加?,则为贪婪模式。
+    例:
+        var str = '<div>asdsadsad</div><div>23456</div>'
+        var reg1 = /<div>.*<\/div>/g
+        var reg2 = /<div>.*?<\/div>/g
+        console.log(str.match(reg1)) // [ '<div>asdsadsad</div><div>123456</div>' ]
+        console.log(str.match(reg2)) // [ '<div>asdsadsad</div>', '<div>123456</div>' ]
+
+        // 模板替换
+        var template = "{{name}}很厉害，才{{age}}岁"
+        var context = {name: 'bottle', age: '15'}
+        var render = function(template, context) {
+            return template.replace(/\{\{(.*?)\}\}/g, (match, key, index, source) => {
+                console.log(match, key, index, source)
+                return context[key]
+            })
+        }
+        console.log(render(template, context))
+
+        // 给纯文本p标签加类
+        var str = '<p class="content">asdfgh<img/></p><p>abcde</p></p><p>123456</p>'
+        var reg = /<p[^>]*>((?!<img|<video|<p).|\n)*?<[/]p>/gi
+        console.log(str.match(reg))
+        var result = str.replace(reg, (match, key, index, source) => {
+            console.log('match: ', match)
+            console.log('key: ', key)
+            console.log('index: ', index)
+            console.log('source: ', source)
+            return `${match.slice(0, 2)} pureTxt${match.slice(2)}`
+        })
+        console.log(result)
+
+
+        // replace函数参数
+        // match：匹配项（第一个参数）
+        // key1：子组匹配项（第二个参数，如果有子组）
+        // key2：子组匹配项（第三个参数，如果有第二个子组）
+        // index：匹配项开始的下表（子组匹配项后面紧跟着match匹配项开始的下表）
+        // source：正则匹配源字符串
+        var str = '<p class="pStyle">asdfgh</p><p>abcde</p>'
+        var reg = /<p([^>]*)>(.*?)<[/]p>/gi
+        str.replace(reg, (match, key1, key2, index, source) => {
+            console.log('match: ', match)
+            console.log('key1: ', key1)
+            console.log('key2: ', key2)
+            console.log('index: ', index)
+            console.log('source: ', source)
+            return `${match.slice(0, 2)} pureTxt${match.slice(2)}`
+        })
+
+五.括号的区别与应用:
     1.():圆括号()是组，主要应用在限制多选结构的范围/分组/捕获文本/环视/特殊模式处理
         例子:
         1.1.(abc|bcd|cde),表示这一段是abc、bcd、cde三者之一，顺序也必须一致。

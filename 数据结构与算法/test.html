@@ -57,7 +57,201 @@
     // console.log(arr)
 
 
-    
+    // class Node {
+    //   constructor(data, left, right) {
+    //     this.data = data
+    //     this.left = left
+    //     this.right = right
+    //     this.count = 1
+    //   }
+    //   show() {
+    //     return this.data + ': ' + this.count
+    //   }
+    // }
+
+    // class BST {
+    //   constructor() {
+    //     this.root = null
+    //   }
+    //   insert(data) {
+    //     const matchNode = this.find(data)
+    //     if (matchNode) {
+    //       matchNode.count++
+    //     } else {
+    //     const node = new Node(data, null, null)
+    //       if (this.root === null) {
+    //         this.root = node
+    //       } else {
+    //         let currentNode = this.root
+    //         let parentNode
+    //         while (true) {
+    //           parentNode = currentNode
+    //           if (data > currentNode.data) {
+    //             currentNode = currentNode.right
+    //             if (currentNode === null) {
+    //               parentNode.right = node
+    //               break
+    //             }
+    //           } else {
+    //             currentNode = currentNode.left
+    //             if (currentNode === null) {
+    //               parentNode.left = node
+    //               break
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    //   remove(data) {
+    //     const getSmallest = (node) => {
+    //       let currentNode = node
+    //       while (currentNode.left !== null) {
+    //         currentNode = currentNode.left
+    //       }
+    //       return currentNode
+    //     }
+
+    //     const removeNode = (node, data) => {
+    //       if (node.data === data) {
+    //         if (node.left === null && node.right === null) {
+    //           return null
+    //         }
+    //         if (node.left === null) {
+    //           return node.right
+    //         }
+    //         if (node.right === null) {
+    //           return node.left
+    //         }
+    //         const tempNode = getSmallest(node.right)
+    //         node.data = tempNode.data
+    //         node.right = removeNode(node.right, tempNode.data)
+    //         return node
+    //       } else if (data > node.data) {
+    //         node.right = removeNode(node.right, data)
+    //         return node
+    //       } else {
+    //         node.left = removeNode(node.left, data)
+    //         return node
+    //       }
+    //     }
+    //     removeNode(this.root, data)
+    //   }
+
+    //   preOrder(node) {
+    //     if (node !== null) {
+    //       console.log(node.show() + ' ');
+    //       this.preOrder(node.left)
+    //       this.preOrder(node.right)
+    //     }
+    //   }
+
+    //   inOrder(node) {
+    //     if (node !== null) {
+    //       this.inOrder(node.left)
+    //       console.log(node.show() + ' ');
+    //       this.inOrder(node.right)
+    //     }
+    //   }
+
+    //   postOrder(node) {
+    //     if (node !== null) {
+    //       this.postOrder(node.left)
+    //       this.postOrder(node.right)
+    //       console.log(node.show() + ' ');
+    //     }
+    //   }
+
+    //   getMin() {
+    //     let currentNode = this.root
+    //     while (currentNode.left) {
+    //       currentNode = currentNode.left
+    //     }
+    //     return currentNode.data
+    //   }
+
+    //   getMax() {
+    //     let currentNode = this.root
+    //     while (currentNode.right) {
+    //       currentNode = currentNode.right
+    //     }
+    //     return currentNode.data
+    //   }
+
+    //   find(data) {
+    //     let currentNode = this.root
+    //     while (currentNode !== null) {
+    //       if (data === currentNode.data) {
+    //         return currentNode
+    //       } else if (data > currentNode.data) {
+    //         currentNode = currentNode.right
+    //       } else {
+    //         currentNode = currentNode.left
+    //       }
+    //     }
+    //     return null
+    //   }
+    // }
+
+    // const words = new BST()
+    // const arr = ['how', 'are', 'you', 'i', 'am', 'fine', 'what', 'about', 'you']
+    // arr.forEach(word => {
+    //   words.insert(word)
+    // })
+    // words.preOrder(words.root)
+
+    function binSearchDig(arr, data, start, end) {
+      if (start > end) {
+        return -1
+      } else {
+      let mid = Math.floor((start + end) / 2)
+      if (arr[mid] > data) {
+        return binSearchDig(arr, data, start, mid - 1)
+      } else if (arr[mid] < data) {
+        return binSearchDig(arr, data, mid + 1, end)
+      } else {
+        return mid
+      }
+    }
+    }
+    const arr = [1,2,4,5,7,99,334,44444]
+    console.log(binSearch(arr, 334, 0, 7))
+
+    function binSearch(arr, data) {
+      let start = 0
+      let end = arr.length - 1
+      while (start <= end) {
+        let mid =  Math.floor((start + end) / 2)
+        if (arr[mid] > data) {
+          end = mid - 1
+        } else if (arr[mid] < data) {
+          start = mid + 1
+        } else {
+          return mid
+        }
+      }
+      return -1
+    }
+
+    function swap(arr, i ,j) {
+      let temp = arr[i]
+      arr[i] = arr[j]
+      arr[j] = temp
+    }
+
+    // 选择
+    function selectSort(arr) {
+      for (var i = 0; i < arr.length; i++) {
+        for(var j = i + 1; j < arr.length; j++) {
+          if (arr[i] > arr[j]) {
+            swap(arr, i ,j)
+          }
+        }
+      }
+    }
+    var arr1 = [3,4,21,1,5,72,3,3,4,5]
+    selectSort(arr1)
+    console.log(arr1)
   </script>
 </body>
 

@@ -120,14 +120,14 @@
         cities.display();
         cities.remove("Russellville");
         cities.display();
-        console.log(cities.findEleReversePos(3))
+        console.log(cities.findEleReversePos(2))
 
 
         const ysfList = (nums, offset, leftNum) => {
             let i = 2;
             const person = new LList();
             person.insert('person_1', 'head');
-            while (nums > 0) {
+            while (nums > 1) {
                 person.insert('person_' + i, 'person_' + (i - 1))
                 i++;
                 nums--;

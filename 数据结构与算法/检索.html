@@ -62,9 +62,9 @@
             } else {
                 var mid = Math.floor((lower + upper)/2);
                 if (arr[mid] > data) {
-                    binSearchDig(arr, data, lower, mid - 1);
+                    return binSearchDig(arr, data, lower, mid - 1);
                 } else if (arr[mid] < data) {
-                    binSearchDig(arr, data, mid + 1, upper);
+                    return binSearchDig(arr, data, mid + 1, upper);
                 } else {
                     return mid;
                 }
