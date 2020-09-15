@@ -1,4 +1,4 @@
-async:一部函数是指通过事件循环异步执行的函数，他会通过一个隐式的Promise返回其结果。
+async:异步函数是指通过事件循环异步执行的函数，他会通过一个隐式的Promise返回其结果。
 async函数的返回值是Promise.resolve([return 的值])
 
 async function func() {

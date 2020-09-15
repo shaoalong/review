@@ -66,7 +66,7 @@
 //             for (let rule of rules) {
 //                 (function (rule) {
 //                     self.cache.push(function () {
-//                         const strategyArr = rule.strategy.split(';')
+//                         const strategyArr = rule.strategy.split(':')
 //                         const errorMsg = rule.errorMsg
 //                         const strategy = strategyArr.shift()
 //                         strategyArr.unshift(dom.value)
@@ -340,6 +340,7 @@
 //         var F = function(Light) {
 //             this.light = Light
 //         }
+//         F.prototype = new Status()
 //         for (var i in params) {
 //             F.prototype[i] = params[i]
 //         }

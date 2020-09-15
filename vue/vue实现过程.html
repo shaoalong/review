@@ -143,7 +143,7 @@
         // updateChildren(elm, oldCh, ch) 方法是 Vnode 处理方法中最复杂也是最核心的方法即diff算法，它主要做两件事情：
         //     1.递归调用 patchVnode 方法处理更下一级子节点
         //     2.根据各种判断条件，对页面上的 DOM 节点进行尽可能少的添加、移动和删除操作
-        //    执行流程：（OS:newStartVnode,OE:oldEndVnode,S:newStartVnode,E:newEndVnode）
+        //    执行流程：（OS:oldStartVnode,OE:oldEndVnode,S:newStartVnode,E:newEndVnode）
         //         1.OS与S对比，如果是同一个Vnode，调用patchVnode()进行递归patch；头指针右移；
         //         2.OE与E比较，如果是同一个Vnode，调用patchVnode()进行递归patch；尾指针左移；
         //         3.OS与E比较，如果是同一个Vnode，调用patchVnode()进行递归patch；OS移到OE的后面；旧头指针右移，新尾指针左移；

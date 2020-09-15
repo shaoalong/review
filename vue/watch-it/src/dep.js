@@ -23,9 +23,10 @@ class Dep {
   // 通知订阅者
   notify() {
     console.log('notify', this)
-    this.subs.forEach(watcher => {
-      watcher.update()
-    })
+    var subs = this.subs.slice();
+    for (var i = 0; i < subs.length; i++) {
+      subs[i].update()
+    }
   }
 
   // 建立与当前watcher的依赖关系
@@ -36,10 +37,13 @@ class Dep {
 
 Dep.target = null
 Dep.pushTarget = function(target) {
+  // 在一次依赖收集期间，如果有其他依赖收集任务开始（比如：当前 computed 计算属性嵌套其他 computed 计算属性），
+  // 那么将会把当前 target 暂存到 targetStack，先进行其他 target 的依赖收集，
   if (Dep.target) targetStack.push(Dep.target)
   Dep.target = target
 }
 Dep.popTarget = function() {
+  // 当嵌套的依赖收集任务完成后，将 target 恢复为上一层的 Watcher，并继续做依赖收集
   Dep.target = targetStack.pop()
 }
 

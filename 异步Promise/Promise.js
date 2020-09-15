@@ -35,6 +35,23 @@
 
 const MyPromise = require('./myPromise')
 
+const p1 = new MyPromise((resolve, reject) => {
+    setTimeout(() => {
+        resolve('p1 fulfilled')
+    })
+})
+const p2 = new MyPromise((resolve, reject) => {
+    resolve('p1 fulfilled')
+})
+const p3 = p1.then(value => {
+    console.log(value)
+    return p2
+})
+p3.then(value => {
+    console.log('p3 value:', value)
+})
+
+
 var p = new MyPromise(resolve => {
     resolve('p1')
 })

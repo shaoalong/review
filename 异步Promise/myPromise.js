@@ -24,6 +24,7 @@ class MyPromise {
         }
     }
     _resolve(val) {
+        // debugger
         const run = () => {
             if (this._status !== PENDING) return
             this._status = FULFILLED
@@ -77,6 +78,7 @@ class MyPromise {
         const { _status, _value } = this
         // 返回一个新的Promise对象
         return new MyPromise((onFulfilledNext, onRejectedNext) => {
+            // debugger
             // 封装一个成功时执行的函数
             let fullfilled = value => {
                 try {
@@ -85,6 +87,7 @@ class MyPromise {
                         onFulfilledNext(value)
                     } else {
                         let res = onFulfilled(value)
+                        // console.log(res)
                         if (res instanceof MyPromise) {
                             // 如果当前回调函数返回MyPromise对象，必须等待其状态改变后在执行下一个回调
                             res.then(onFulfilledNext, onRejectedNext)
@@ -118,12 +121,11 @@ class MyPromise {
                     onRejectedNext(err)
                 }
             }
-            console.log('status:',_status)
             switch (_status) {
                 // 当状态为pending时，将then方法回调函数加入执行队列等待执行
                 case PENDING:
-                    this._fulfilledQueues.push(onFulfilled)
-                    this._rejectedQueues.push(onRejected)
+                    this._fulfilledQueues.push(fullfilled)
+                    this._rejectedQueues.push(rejected)
                     break
                 // 当状态已经改变时，立即执行对应的回调函数
                 case FULFILLED:
@@ -218,4 +220,4 @@ class MyPromise {
         })
     }
 }
-module.exports = MyPromise
+// module.exports = MyPromise

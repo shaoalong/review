@@ -1,0 +1,11 @@
+build/*
+config/*
+dist/*
+node_modules/*
+test/unit/coverage/
+mock/map-data/*.json
+*.html
+static/
+webpack.config.js
+stylelint.config.js
+笔记.js
