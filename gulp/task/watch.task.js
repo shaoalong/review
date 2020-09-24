@@ -8,7 +8,7 @@ module.exports = function(NODE_ENV, gulp, config, $, browserSync, argv, runSeque
             {
                 paths: [config.src.css + '**/".css', config.src.less + '**/*.less'],
                 task: 'css',
-            }
+            },
             {
                 paths: config.src.js + '**/*.js',
                 task: 'js',

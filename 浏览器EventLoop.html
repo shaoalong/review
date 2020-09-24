@@ -31,14 +31,14 @@
         //         . 该线程当然是主要处理JavaScript脚本，执行代码。
         //         . 也是主要负责执行准备好待执行的事件，即定时器计数结束，或者异步请成功并正确返回时，将一次进入任务队列，等待JS引擎线程的执行。
         //         . 当然，该线程与GUI渲染线程互斥，当JS引擎线程执行JavaScript脚本时间过长，将导致页面渲染的阻塞。
-        //     定时触发器线程：
-        //         . 负责执行异步定时器一类的函数的线程，如：setTimeout/setInterval
-        //         . 主线程依次执行代码时，遇到定时器，会将定时器交给该线程处理，当计数完毕后，事件触发线程会将计数完毕后的事件加入到任务队列的尾部，
-        //             等待JS引擎先后才能执行。
         //     事件触发线程：
         //         . 主要负责将准备好的事件交给JS引擎线程执行。
         //             比如setTimeout定时器计时结束，ajax等异步请求成功并触发回调函数，或者用户触发点击事件时，该线程
         //             会将整装待发的事件依次加入到任务队列的尾部，等待JS引擎线程的执行。
+        //     定时触发器线程：
+        //         . 负责执行异步定时器一类的函数的线程，如：setTimeout/setInterval
+        //         . 主线程依次执行代码时，遇到定时器，会将定时器交给该线程处理，当计数完毕后，事件触发线程会将计数完毕后的事件加入到任务队列的尾部，
+        //             等待JS引擎先后才能执行。
         //     异步http请求线程：
         //         .  负责执行异步请求一类的函数的线程，如Promise，axios，ajax等。
         //         . 主线程一次执行代码时，遇到异步请求，会将函数交给该线程处理，当监听到状态码变更，如果有回调函数，
@@ -54,9 +54,9 @@
             
         //     例：
         //         async function async1() {               --> 0
-        //         console.log( 'async1 start' )           --> 1
-        //         await async2()                          --> 2
-        //         console.log( 'async1 end' )             --> 3
+        //              console.log( 'async1 start' )           --> 1
+        //              await async2()                          --> 2
+        //              console.log( 'async1 end' )             --> 3
         //         }
         //         async function async2() {               --> 4
         //             console.log( 'async2' )
@@ -75,13 +75,13 @@
         //         console.log( 'script end' )             --> 10
 
         //     宏任务：5、7、8、10、6
-        //     微任务：2、9
+        //     微任务：3、9
 
         //     5：script start
         //     7: async1 start、async2
         //     8：promise1
         //     10：script end
-        //     2:async1 end
+        //     3:async1 end
         //     9:promise2
         //     6：setTimeout
     </script>

@@ -1,21 +1,21 @@
 var express = require('express');
 var router = express.Router();
-var db = require('./db.js');
-
+// var db = require('./db.js');
 /* 查询列表页 */
 router.get('/', function(req, res, next) {
-    db.query('select * from userinfo', function(err, rows) {
-        if (err) {
-            res.render('users', { title: 'Express', datas: []});
-        } else {
-            res.render('users', { title: 'Express', datas: rows});
-        }
-    });
+    res.render('users', { title: 'Express', datas: []});
+    // db.query('select * from userinfo', function(err, rows) {
+    //     if (err) {
+    //         res.render('users', { title: 'Express', datas: []});
+    //     } else {
+    //         res.render('users', { title: 'Express', datas: rows});
+    //     }
+    // });
 });
 
 /* 新增页面跳转 */
 router.get('/add', function(req, res) {
-    res.render('add');
+    res.render('add.html');
 });
 router.post('/add', function (req, res) {
     var name = req.body.name;

@@ -31,15 +31,27 @@
 // console.log(o3)
 // console.log(o3.a)
 
+
+// 在使用Object.defineProperty、Object.defineProperties 或 Object.create 函数的情况下添加数据属性，writable、enumerable和configurable默认值为false。
+// 使用对象直接量创建的属性，writable、enumerable和configurable特性默认为true。
+
 // 拷贝
-// const obj = {}
+// const obj = {
+//     prototype: {
+//         __proto__: {a1:1},
+//     },
+//     __proto__: {a:1},
+//     b:1
+// }
 // const clone1 = {
 //     __proto__: Object.getPrototypeOf(obj),
 //     ...obj
 // }
 // const clone2 = Object.assign(Object.create(Object.getPrototypeOf(obj)), obj)
-// const clone3 = Object.create((Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj)));
-
+// const clone3 = Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));
+// console.log(clone1)
+// console.log(clone2)
+// console.log(clone3)
 // // assign对于set 处理为undefined，get处理成 返回字段，最终返回的是属性并非方法
 // const source = {
 //     set foo(value) {
@@ -78,6 +90,7 @@
 // //         return Number(obj) % 2 === 0;
 // //     }
 // // }
+// console.log(Even)
 // console.log(2 instanceof Even)
 
 // 2.Symbol.isConcatSpreadable:一个布尔值，表示该对象用于Array.prototype.concat()时，是否可以展开;数组的默认行为是可以展开，Symbol.isConcatSpreadable默认等于undefined。该属性等于true时，也有展开的效果

@@ -18,7 +18,6 @@ app.set('port', port);
 /**
  * 创建Web服务器
  */
-console.trace(app);
 var server = http.createServer(app);
 
 /**

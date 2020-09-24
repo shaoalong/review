@@ -11,8 +11,9 @@ var users = require('./routes/users');
 var app = express();
 
 //指定视图引擎为ejs
-app.set('views', path.join(__dirname, 'views'));
-app.engine('.html', ejs.__express);
+app.set('views', path.join(__dirname, 'views')); // 设定render函数的默认路径为'views', 默认是'views'
+app.engine('html', ejs.__express);
+app.engine('ejs', ejs.__express);
 app.set('view engine', 'html');
 
 // uncomment after placing your favicon in /public
@@ -52,3 +53,16 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+
+// views: render函数的默认路径, 默认是'views'
+// app.set('views', path.join(__dirname, 'pages')); // 设定render函数的默认路径为'pages'
+
+// app.engine(ext, callback): 注册模板引擎的 callback 用来处理ext扩展名的文件,可以针对不同文件设置多个模板引擎
+// var ejs = require('ejs')
+// var jade = require('jade')
+// app.engine('html', ejs.__express) 
+// app.engine('ejs', ejs.__express)
+// app.engine('jade', jade.__express)
+
+// view engine: 没有指定文件模板格式时，默认使用的引擎插件
+// app.set('view engine', 'html') // 没有指定文件模板格式时,使用html引擎

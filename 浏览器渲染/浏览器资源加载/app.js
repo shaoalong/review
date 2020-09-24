@@ -4,6 +4,7 @@ const hostname = '127.0.0.1';
 const port = '8088';
 
 http.createServer((req, res) => {
+    console.log(req)
     if (req.url === '/') {
         fs.readFile('index.html', 'utf-8', function(err, data) {
             res.writeHead(200, { 'Content-Type': 'text/html' });

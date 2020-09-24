@@ -23,6 +23,25 @@
     // 设备像素比：DPR = 设备像素/CSS像素
     // 获得设备像素比（dpr）后，便可得知设备像素与CSS像素之间的比例。当这个比率为1:1时，使用1个设备像素显示1个CSS像素。当这个比率为2:1时，使用4个设备像素显示1个CSS像素，当这个比率为3:1时，使用9（3*3）个设备像素显示1个CSS像素。
 
+    // 适配原理
+    // designWidth: 设计图UI的宽度
+    // winWidth：window.innnerWidth
+    // defaultFontSize：系统默认字体大小
+    // rem2Px: 预设文档中1 rem = rem2px px
+    // htmlFontSize： html的font-size
+    // winWidth /designWidth：缩放比
+
+    // 方案1：htmlFontSize设定为百分比
+    // 设html的fangt-size为x
+    // => htmlFontSize = winWidth /designWidth * rem2Px = x * defaultFontSize
+    // => x = (winWidth /designWidth * rem2Px)/defaultFontSize * 100 + '%'
+    // => htmlFontSize = (winWidth /designWidth * rem2Px)/defaultFontSize * 100 + '%'
+
+    // 方案2：htmlFontSize设定为px
+    // => htmlFontSize = (winWidth / designWidth) * rem2Px + 'px'
+    // 监听resize和pageshow事件，对htmlFontSize进行设定
+
+
     一像素边框问题：
       其实出现1px的原因在于，UI设计师要求的1px是物理像素，而我们开发写的css是逻辑像素，他们是不一样的，存在一个换算比例，通常javascript可以通过window.devicePixelRatio来获取，
       在iphone上出现原因就是devicePixelRatio=2，而border-width=1,边框被放大了两倍，导致出现边框变宽。

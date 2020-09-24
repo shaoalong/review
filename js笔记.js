@@ -429,10 +429,10 @@
 
 19. 保留小数点后两位：
 		1). num_string.substring(0,num_string.indexOf(".")+3) // 字符串截取
-		2). parseFloat(num).toFixed(3).slice(0,-1) // 最好用，小数点保留两位，截取非四舍五入，
-		3). num_string.replace(/([0-9]+\.[0-9]{2})[0-9]*/,"$1"); // 字符串截取
-		4). Math.round(num*100)/100 // 小数点最多保留两位，四舍五入
-		5). num.toFixed(2) // 小数点保留两位，四舍五入
+		2). num_string.replace(/([0-9]+\.[0-9]{2})[0-9]*/,"$1"); // 字符串截取
+		3). Math.round(num*100)/100 // 小数点最多保留两位，四舍五入
+		4). num.toFixed(2) // 小数点保留两位，四舍五入
+		5). parseFloat(num).toFixed(3).slice(0,-1) // 小数点保留两位
 
 20.flex布局会把伪元素当做元素来分配空间，但我们一般希望伪元素只有装饰作用，不影响布局，这与我们预期不一致。
 	所以，当flex布局中有伪元素时要特别小心。解决方案是：给伪元素绝对定位（position:absolute/fixed）
@@ -523,3 +523,25 @@
 	const reg = /<p>((?!img).)*<[/]p>/gi
 	var str = '<p><p> 我是纯文本<br> </p><strong></strong><img src="http://api-uat.kyeapi.com/router/download/iaams_baike_answer/14/507dd4691df743859b78295ad227d63f"></p>'
 	str.match(reg)
+
+23. js错误捕获：
+		错误类型:
+			EvalError：错误发生在eval()中
+			SyntaxError：语法错误
+			RangeError：数值超出错误
+			ReferenceError：引用错误
+			TypeError：变量类型错误
+			URIError：encodeURI()或decodeURL()中
+		捕获错误：
+			//try-catch-finally捕获错误：
+			try {
+				...可能出现错误的语句
+			} catch (err) {
+				...错误发生后的处理
+			} finally {
+				...完成后执行的语句
+			}
+			// bom错误捕获监听
+			window.onerror = function(msg=错误信息, url=发生错位的文件url, num=发生错误的行号) {}
+			//img标签图片加载错误回调
+			image.onerror = function() {}

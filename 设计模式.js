@@ -376,6 +376,7 @@
 //         this.status = status
 //     }
 //     var light = new Light()
+
 // 8.享元模式：
 // 9.工厂模式：
 //     定义：将其成员对象的实例化推迟到子类来实现的类。

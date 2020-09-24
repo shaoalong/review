@@ -20,18 +20,18 @@
             <th>年龄</th>
             <th>操作</th>
         </tr>
-        <%datas.forEach(function(user,index){%>
+        <!-- <%datas.forEach(function(user,index){%>
         <tr>
             <td><%=user.id%></td>
             <td><%=user.name%></td>
             <td><%=user.age%></td>
             <td>
                 <a href="/users/add">新增</a>
-                <a onClick="del(<%=user.id%>)">删除</a>
-                <a href="/users/toUpdate/<%=user.id%>">修改</a>
+                <a onClick="del(<%= user.id %>)">删除</a>
+                <a href="/users/toUpdate/<%= user.id %>">修改</a>
             </td>
         </tr>
-        <%});%>
+        <%});%> -->
     </table>
 </body>
 <script>
