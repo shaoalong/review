@@ -602,3 +602,108 @@
 			return v
 		})
 		console.log('=>',friend1)
+
+17. forEach与for的区别
+	for遍历的特性：
+		1.for在遍历的时候可以更改i的值
+			var arr = ['a','b','c','d','b','e','f','g','h']
+			for (var i = 0; i < arr.length; i++) {
+				console.log('index:', i, ';value:', arr[i])
+				if (arr[i] === 'b') {
+					arr.splice(i, 1)
+					i--
+				}
+			}
+			console.log(arr)
+		2.直接在for循环中使用return会报错，函数中使用for可以return
+			// 直接在for中使用return会报错
+			var arr = ['a','b','c','d','b','e','f','g','h']
+			for (var i = 0; i < arr.length; i++) {
+				console.log('index:', i, ';value:', arr[i])
+				if (arr[i] === 'b') {
+					arr.splice(i, 1)
+					i--
+				}
+				return 'hahha' // Uncaught SyntaxError: Illegal return statement
+			}
+			// 函数中for return
+			function fn() {
+				for (var i = 0; i < arr.length; i++) {
+					console.log('index:', i, ';value:', arr[i])
+					if (arr[i] === 'b') {
+						arr.splice(i, 1)
+						i--
+					}
+					return 'hahha'
+				}
+			}
+			fn()
+		3.for可以使用break跳出循环
+			var arr = ['a','b','c','d','b','e','f','g','h']
+			for (var i = 0; i < arr.length; i++) {
+				console.log('index:', i, ';value:', arr[i])
+				if (arr[i] === 'b') {
+					arr.splice(i, 1)
+					i--
+				}
+				break
+			}
+	forEach遍历的特性：
+		// 3.不可以重置i和v
+			var arr = ['a','b','c','d','b','e','f','g','h']
+			arr.forEach((v, i) => {
+				console.log('index:', i, ';value:', arr[i])
+				if (arr[i] === 'b') {
+					arr.splice(i, 1)
+					i-- // i会在forEach哈数内部自增，在回调中更改不了
+				}
+			})
+			console.log(arr)
+		1.可以使用return，但rerutn并不会生效
+			var arr = ['a','b','c','d','b','e','f','g','h']
+			arr.forEach((v, i) => {
+				console.log('index:', i, ';value:', arr[i])
+				return 'haha'
+			})
+			console.log(arr)
+		2.不可以使用break跳出循环
+			var arr = ['a','b','c','d','b','e','f','g','h']
+			arr.forEach((v, i) => {
+				console.log('index:', i, ';value:', arr[i])
+				break // Uncaught SyntaxError: Illegal break statement
+			})
+			console.log(arr)
+	
+	如何跳出forEach遍历
+		1.改写forEach方法
+			Array.prototype.forEach = function(callback) {
+				var i = 0;
+				while (i < this.length) {
+					var ret = callback.call(this, this[i], i, this)
+					if (typeof ret !== 'undefined' && (ret === null || ret === false)) break
+					i++
+				}
+			}
+
+			var arr = ['a','b','c','d','b','e','f','g','h']
+			arr.forEach((v, i) => {
+				console.log(v)
+				if (v === 'e') {
+					return false
+				}
+			})
+		2.利用异常的方式来跳出forEach循环
+			var arr = ['a','b','c','d','b','e','f','g','h']
+			try {
+				arr.forEach((v, i) => {
+					console.log(v)
+					if (v === 'e') {
+						throw new Error('StopIteration')
+					}
+				})
+			} catch (err) {
+				
+			}
+			console.log(arr)
+
+		
