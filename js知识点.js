@@ -706,4 +706,4 @@
 			}
 			console.log(arr)
 
-		
+	18.浏览器节点调试：打开控制台->Elements栏点中节点->console栏输入$0 获取节点
